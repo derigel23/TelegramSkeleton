@@ -45,8 +45,9 @@ namespace Team23.TelegramSkeleton
       }
 
       telemetry.Context.User.AccountId = (message.From?.Id ?? message.ForwardFrom?.Id)?.ToString();
-      telemetry.Context.User.AuthenticatedUserId = message.From?.Username ?? message.ForwardFrom?.Username;
-      telemetry.Properties["uid"] = message.From?.Username ?? message.ForwardFrom?.Username;
+      telemetry.Context.User.AuthenticatedUserId = message.From?.Id.ToString() ?? message.ForwardFrom?.Id.ToString();
+      telemetry.Properties["uid"] = message.From?.Id.ToString() ?? message.ForwardFrom?.Id.ToString();
+      telemetry.Properties["username"] = message.From?.Username ?? message.ForwardFrom?.Username;
       telemetry.Properties["messageType"] = message.Type.ToString();
       telemetry.Properties["chat"] = message.Chat.Username;
 

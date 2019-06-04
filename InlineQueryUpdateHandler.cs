@@ -22,7 +22,8 @@ namespace Team23.TelegramSkeleton
     public async Task<bool?> Handle(Update update, OperationTelemetry telemetry, CancellationToken cancellationToken = default)
     {
       var inlineQuery = update.InlineQuery;
-      telemetry.Properties["uid"] = inlineQuery.From?.Username;
+      telemetry.Properties["uid"] = inlineQuery.From?.Id.ToString();
+      telemetry.Properties["username"] = inlineQuery.From?.Username;
       telemetry.Properties["query"] = inlineQuery.Query;
       return await HandlerExtentions<bool?>.Handle(myInlineQueryHandlers, inlineQuery, new object(), cancellationToken).ConfigureAwait(false);
     }

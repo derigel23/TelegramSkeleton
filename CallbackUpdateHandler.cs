@@ -26,7 +26,8 @@ namespace Team23.TelegramSkeleton
     public async Task<bool?> Handle(Update update, OperationTelemetry telemetry, CancellationToken cancellationToken = default)
     {
       var callbackQuery = update.CallbackQuery;
-      telemetry.Properties["uid"] = callbackQuery.From?.Username;
+      telemetry.Properties["uid"] = callbackQuery.From?.Id.ToString();
+      telemetry.Properties["username"] = callbackQuery.From?.Username;
       telemetry.Properties["data"] = callbackQuery.Data;
       try
       {
