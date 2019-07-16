@@ -50,6 +50,8 @@ namespace Team23.TelegramSkeleton
       telemetry.Properties["username"] = message.From?.Username ?? message.ForwardFrom?.Username;
       telemetry.Properties["messageType"] = message.Type.ToString();
       telemetry.Properties["chat"] = message.Chat.Username;
+      telemetry.Properties["cid"] = message.Chat.Id.ToString();
+      telemetry.Properties["mid"] = message.MessageId.ToString();
 
       var result = await ProcessMessage(async (msg, context, properties, ct) =>
       {
