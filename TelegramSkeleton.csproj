@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netcoreapp2.2</TargetFramework>
+        <TargetFramework>netcoreapp3.0</TargetFramework>
         <AssemblyName>Team23.TelegramSkeleton</AssemblyName>
         <RootNamespace>Team23.TelegramSkeleton</RootNamespace>
         <PackageId>Team23.TelegramSkeleton</PackageId>
@@ -17,8 +17,8 @@
       <PackageReference Include="JetBrains.Annotations" Version="2019.1.3" />
       <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.7.1" />
       <PackageReference Include="Microsoft.AspNetCore.App" />
-      <PackageReference Include="NodaTime" Version="2.4.6" />
-      <PackageReference Include="NodaTime.Testing" Version="2.4.6" />
+      <PackageReference Include="NodaTime" Version="2.4.7" />
+      <PackageReference Include="NodaTime.Testing" Version="2.4.7" />
       <PackageReference Include="Telegram.Bot" Version="15.0.0" />
     </ItemGroup>
 
