@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Dynamic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -26,10 +25,12 @@ namespace Team23.TelegramSkeleton
 
     private async Task<IDictionary<string, object>> GetStatusData(CancellationToken cancellationToken)
     {
-      dynamic status = new ExpandoObject();
-      status.botInfo = await myBot.GetMeAsync(cancellationToken);
-      status.webhookInfo = await myBot.GetWebhookInfoAsync(cancellationToken);
-      status.is64BitProcess = System.Environment.Is64BitProcess;
+      var status = new Dictionary<string, object>
+      {
+        { "botInfo", await myBot.GetMeAsync(cancellationToken) },
+        { "webhookInfo", await myBot.GetWebhookInfoAsync(cancellationToken) },
+        { "is64BitProcess", System.Environment.Is64BitProcess },
+      };
       foreach (var statusProvider in myStatusProviders)
       {
         await statusProvider.Handle(status, ControllerContext, cancellationToken);
