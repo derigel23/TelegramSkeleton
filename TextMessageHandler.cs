@@ -31,7 +31,7 @@ namespace Team23.TelegramSkeleton
       {
         var entityEx = new MessageEntityEx(message, entity);
         // check bot name, if presents
-        if ((entityEx.Type == MessageEntityType.BotCommand) && (entityEx.CommandBot is StringSegment commandBot) && !StringSegment.IsNullOrEmpty(commandBot))  
+        if ((entityEx.Type == MessageEntityType.BotCommand) && (entityEx.CommandBot is { } commandBot) && !StringSegment.IsNullOrEmpty(commandBot))  
         {
           if (!commandBot.Equals((await myBot.GetMeAsync(cancellationToken)).Username, StringComparison.OrdinalIgnoreCase))
             continue;
