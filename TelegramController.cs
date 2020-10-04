@@ -46,7 +46,7 @@ namespace Team23.TelegramSkeleton
             for (var i = 0; i < errors.Count; i++)
             {
               operation.Telemetry.Properties[$"ModelState.{errorEntry.Key}.{i}"] = errors[i].ErrorMessage;
-              if (errors[i].Exception is Exception exception)
+              if (errors[i].Exception is { } exception)
               {
                 myTelemetryClient.TrackException(exception, new Dictionary<string, string> { { errorEntry.Key, errorEntry.Value.AttemptedValue } });
               }
@@ -55,7 +55,7 @@ namespace Team23.TelegramSkeleton
           throw new ArgumentNullException(nameof(update));
         }
 
-        if (await HandlerExtentions<bool?>.Handle(myUpdateHandlers.Bind(update), update, (OperationTelemetry) operation.Telemetry, cancellationToken).ConfigureAwait(false) is bool result)
+        if (await HandlerExtentions<bool?>.Handle(myUpdateHandlers.Bind(update), update, (OperationTelemetry) operation.Telemetry, cancellationToken).ConfigureAwait(false) is { } result)
         {
           operation.Telemetry.Success = result;
           return Ok();
