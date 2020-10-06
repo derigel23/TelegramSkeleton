@@ -31,4 +31,8 @@
       <Folder Include="Properties" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove=".gitmodules" />
+    </ItemGroup>
+
 </Project>
