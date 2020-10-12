@@ -48,6 +48,7 @@ namespace Team23.TelegramSkeleton
       {
         { "botInfo", await myBot.GetMeAsync(cancellationToken) },
         { "webhookInfo", await myBot.GetWebhookInfoAsync(cancellationToken) },
+        { "Framework", System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription },
         { "is64BitProcess", System.Environment.Is64BitProcess },
       };
       foreach (var statusProvider in myStatusProviders)
