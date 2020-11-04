@@ -33,7 +33,8 @@ namespace Team23.TelegramSkeleton
       {
         if (!processedIds.Add(result.Id))
         {
-          myTelemetryClient.TrackException(new DuplicateNameException(result.Id));
+          myTelemetryClient.TrackException(
+            new DuplicateNameException(result.Id), new Dictionary<string, string> { { nameof(ITelegramBotClient.BotId), BotId.ToString() } });
         }
       }
       await AnswerInlineQueryAsync(inlineQueryId, results, cacheTime, isPersonal, nextOffset, switchPmText, switchPmParameter, cancellationToken)

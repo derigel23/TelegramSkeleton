@@ -34,7 +34,7 @@ namespace Team23.TelegramSkeleton
       TTelegramBotClient BotFactory(HttpClient client, IServiceProvider provider)
       {
         var registeredBots = provider.GetServices<TTelegramBotClient>();
-        if (provider.GetService<IActionContextAccessor>() is {ActionContext: { } actionContext} && actionContext.RouteData.Values.TryGetValue(TelegramController.BotIdRouteParameter, out var routeBotId))
+        if (provider.GetService<IActionContextAccessor>() is {ActionContext: { } actionContext} && actionContext.RouteData.Values.TryGetValue(nameof(ITelegramBotClient.BotId), out var routeBotId))
         {
           var botId = Convert.ToInt32(routeBotId);
           foreach (var telegramBotClient in registeredBots)

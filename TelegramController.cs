@@ -31,10 +31,9 @@ namespace Team23.TelegramSkeleton
       myUpdateHandlers = updateHandlers;
     }
 
-    internal const string BotIdRouteParameter = "BotId";
-    
-    [HttpPost("/update/{" + BotIdRouteParameter + ":int?}")]
-    public async Task<IActionResult> Update([CanBeNull, FromBody] Update update, CancellationToken cancellationToken = default)
+    [HttpPost("/update/{" + nameof(ITelegramBotClient.BotId) + ":int?}")]
+    // ReSharper disable once InconsistentNaming
+    public async Task<IActionResult> Update([CanBeNull, FromBody] Update update, int? BotId = null, CancellationToken cancellationToken = default)
     {
       var operation = myTelemetryClient.StartOperation(new DependencyTelemetry(myTelemetryTypeName ?? GetType().Namespace, Request.Host.ToString(), update?.Type.ToString(), update?.Id.ToString()));
       try
@@ -50,7 +49,11 @@ namespace Team23.TelegramSkeleton
               operation.Telemetry.Properties[$"ModelState.{errorEntry.Key}.{i}"] = errors[i].ErrorMessage;
               if (errors[i].Exception is { } exception)
               {
-                myTelemetryClient.TrackException(exception, new Dictionary<string, string> { { errorEntry.Key, errorEntry.Value.AttemptedValue } });
+                myTelemetryClient.TrackException(exception, new Dictionary<string, string>
+                {
+                  { nameof(ITelegramBotClient.BotId), BotId?.ToString() },
+                  { errorEntry.Key, errorEntry.Value.AttemptedValue }
+                });
               }
             }
           }
@@ -75,7 +78,7 @@ namespace Team23.TelegramSkeleton
       catch (Exception ex)
       {
         operation.Telemetry.Success = false;
-        myTelemetryClient.TrackException(ex);
+        myTelemetryClient.TrackException(ex, new Dictionary<string, string>{ { nameof(ITelegramBotClient.BotId), BotId?.ToString() }});
         return Ok();
       }
       finally
