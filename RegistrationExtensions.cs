@@ -59,7 +59,7 @@ namespace Team23.TelegramSkeleton
     public static void RegisterTelegramSkeleton<TTelegramBotClient>(this ContainerBuilder builder, Assembly assembly = null)
       where TTelegramBotClient : ITelegramBotClientEx
     {
-      builder.RegisterType<TTelegramBotClient>().InstancePerLifetimeScope();
+      builder.RegisterType<TTelegramBotClient>().InstancePerDependency();
       
       builder
         .RegisterAssemblyTypes(Assembly.GetExecutingAssembly(), assembly ?? Assembly.GetCallingAssembly())
