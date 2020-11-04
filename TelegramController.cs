@@ -31,7 +31,9 @@ namespace Team23.TelegramSkeleton
       myUpdateHandlers = updateHandlers;
     }
 
-    [HttpPost("/update")]
+    internal const string BotIdRouteParameter = "BotId";
+    
+    [HttpPost("/update/{" + BotIdRouteParameter + ":int?}")]
     public async Task<IActionResult> Update([CanBeNull, FromBody] Update update, CancellationToken cancellationToken = default)
     {
       var operation = myTelemetryClient.StartOperation(new DependencyTelemetry(myTelemetryTypeName ?? GetType().Namespace, Request.Host.ToString(), update?.Type.ToString(), update?.Id.ToString()));

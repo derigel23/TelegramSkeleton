@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,12 +13,12 @@ namespace Team23.TelegramSkeleton
 {
   public class StatusController : Controller
   {
-    private readonly ITelegramBotClient myBot;
+    private readonly IEnumerable<ITelegramBotClient> myBots;
     private readonly IEnumerable<IStatusProvider> myStatusProviders;
 
-    public StatusController(ITelegramBotClient bot, IEnumerable<IStatusProvider> statusProviders)
+    public StatusController(IEnumerable<ITelegramBotClient> bots, IEnumerable<IStatusProvider> statusProviders)
     {
-      myBot = bot;
+      myBots = bots;
       myStatusProviders = statusProviders;
     }
 
@@ -46,8 +47,12 @@ namespace Team23.TelegramSkeleton
     {
       var status = new Dictionary<string, object>
       {
-        { "botInfo", await myBot.GetMeAsync(cancellationToken) },
-        { "webhookInfo", await myBot.GetWebhookInfoAsync(cancellationToken) },
+        { "bots", await Task.WhenAll(myBots.Select(async bot => new
+          {
+            bot = await bot.GetMeAsync(cancellationToken),
+            hook = await bot.GetWebhookInfoAsync(cancellationToken)
+          }))
+        },
         { "Framework", System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription },
         { "is64BitProcess", System.Environment.Is64BitProcess },
       };
@@ -62,9 +67,12 @@ namespace Team23.TelegramSkeleton
     [HttpGet("/refresh")]
     public async Task<IActionResult> Refresh(CancellationToken cancellationToken)
     {
-      var webHookUrl = Url.Action("Update", "Telegram", null, protocol: "https");
+      foreach (var bot in myBots)
+      {
+        var webHookUrl = Url.Action("Update", "Telegram", new { bot.BotId }, protocol: "https");
       
-      await myBot.SetWebhookAsync(webHookUrl, cancellationToken: cancellationToken);
+        await bot.SetWebhookAsync(webHookUrl, cancellationToken: cancellationToken);
+      }
 
       return RedirectToAction("Status");
     }
@@ -72,9 +80,11 @@ namespace Team23.TelegramSkeleton
     [HttpGet("/clear")]
     public async Task<IActionResult> Clear(CancellationToken cancellationToken)
     {
-      await myBot.SetWebhookAsync("", cancellationToken: cancellationToken);
-
-      await myBot.GetUpdatesAsync(-1, 1, cancellationToken: cancellationToken);
+      foreach (var bot in myBots)
+      {
+        await bot.SetWebhookAsync("", cancellationToken: cancellationToken);
+        await bot.GetUpdatesAsync(-1, 1, cancellationToken: cancellationToken);
+      }
 
       return RedirectToAction("Status");
     }
