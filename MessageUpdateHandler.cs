@@ -60,7 +60,7 @@ namespace Team23.TelegramSkeleton
           telemetry.Properties.Add(property);
         }
 
-        return await HandlerExtentions<TMessageResult>.Handle(myMessageHandlers.Bind(message), message, (updateType, context), ct).ConfigureAwait(false);
+        return await HandlerExtensions<TMessageResult>.Handle(myMessageHandlers.Bind(message), message, (updateType, context), ct).ConfigureAwait(false);
       }, message, cancellationToken);
 
       if (!EqualityComparer<TMessageResult>.Default.Equals(result, default))

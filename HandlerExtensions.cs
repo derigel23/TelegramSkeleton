@@ -20,7 +20,7 @@ namespace Team23.TelegramSkeleton
     }
   }
 
-  public static class HandlerExtentions<TResult>
+  public static class HandlerExtensions<TResult>
   {
     public static async Task<TResult> Handle<TData, TContext>(IEnumerable<IHandler<TData, TContext, TResult>> handlers, TData data, TContext context = default, CancellationToken cancellationToken = default)
     {

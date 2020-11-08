@@ -60,7 +60,7 @@ namespace Team23.TelegramSkeleton
           throw new ArgumentNullException(nameof(update));
         }
 
-        if (await HandlerExtentions<bool?>.Handle(myUpdateHandlers.Bind(update), update, (OperationTelemetry) operation.Telemetry, cancellationToken).ConfigureAwait(false) is { } result)
+        if (await HandlerExtensions<bool?>.Handle(myUpdateHandlers.Bind(update), update, (OperationTelemetry) operation.Telemetry, cancellationToken).ConfigureAwait(false) is { } result)
         {
           operation.Telemetry.Success = result;
           return Ok();

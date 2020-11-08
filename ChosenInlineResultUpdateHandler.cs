@@ -24,7 +24,7 @@ namespace Team23.TelegramSkeleton
       telemetry.Properties["username"] = chosenInlineResult.From?.Username;
       telemetry.Properties["query"] = chosenInlineResult.Query;
       telemetry.Properties["result"] = chosenInlineResult.ResultId;
-      return await HandlerExtentions<bool?>.Handle(myChosenInlineResultHandlers, chosenInlineResult, new object(), cancellationToken).ConfigureAwait(false);
+      return await HandlerExtensions<bool?>.Handle(myChosenInlineResultHandlers, chosenInlineResult, new object(), cancellationToken).ConfigureAwait(false);
     }
   }
 }

@@ -36,7 +36,7 @@ namespace Team23.TelegramSkeleton
           if (!commandBot.Equals((await myBot.GetMeAsync(cancellationToken)).Username, StringComparison.OrdinalIgnoreCase))
             continue;
         }
-        result = await HandlerExtentions<TResult>.Handle(handlers, entityEx, _.context, cancellationToken).ConfigureAwait(false);
+        result = await HandlerExtensions<TResult>.Handle(handlers, entityEx, _.context, cancellationToken).ConfigureAwait(false);
         if (!EqualityComparer<TResult>.Default.Equals(result, default))
           break;
       }

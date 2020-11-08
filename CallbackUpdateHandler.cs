@@ -31,7 +31,7 @@ namespace Team23.TelegramSkeleton
       telemetry.Properties["data"] = callbackQuery.Data;
       try
       {
-        (var text, var showAlert, string url) = await HandlerExtentions<(string, bool, string)>.Handle(myCallbackQueryHandlers.Bind(update), callbackQuery, GetContext(update), cancellationToken).ConfigureAwait(false);
+        (var text, var showAlert, string url) = await HandlerExtensions<(string, bool, string)>.Handle(myCallbackQueryHandlers.Bind(update), callbackQuery, GetContext(update), cancellationToken).ConfigureAwait(false);
         await myTelegramBotClient.AnswerCallbackQueryAsync(callbackQuery.Id, text, showAlert, url, cancellationToken: cancellationToken);
       }
       catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
