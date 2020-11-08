@@ -3,20 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Autofac.Features.Metadata;
 
 namespace Team23.TelegramSkeleton
 {
-  public static class HandlerExtentions
+  public static class HandlerExtensions
   {
     public static IEnumerable<T> Bind<TParameter, T>(this IEnumerable<Func<TParameter, T>> items, TParameter parameter)
     {
       return items.Select(func => func(parameter));
     }
 
-    public static IEnumerable<Meta<Func<T>, TMetadata>> Bind<TParameter, T, TMetadata>(this IEnumerable<Meta<Func<TParameter, T>, TMetadata>> items, TParameter parameter)
+    public static IEnumerable<Lazy<Func<T>, TMetadata>> Bind<TParameter, T, TMetadata>(this IEnumerable<Lazy<Func<TParameter, T>, TMetadata>> items, TParameter parameter)
     {
-      return items.Select(meta => new Meta<Func<T>, TMetadata>(() => meta.Value(parameter), meta.Metadata));
+      return items.Select(meta => new Lazy<Func<T>, TMetadata>(() => () => meta.Value(parameter), meta.Metadata));
     }
   }
 
@@ -34,7 +33,7 @@ namespace Team23.TelegramSkeleton
       return default;
     }
 
-    public static async Task<TResult> Handle<THandler, TData, TContext, TMetadata>(IEnumerable<Meta<Func<THandler>, TMetadata>> handlers, TData data, TContext context = default, CancellationToken cancellationToken = default)
+    public static async Task<TResult> Handle<THandler, TData, TContext, TMetadata>(IEnumerable<Lazy<Func<THandler>, TMetadata>> handlers, TData data, TContext context = default, CancellationToken cancellationToken = default)
       where THandler : IHandler<TData, TContext, TResult>
       where TMetadata : Attribute, IHandlerAttribute<TData, TContext>
     {

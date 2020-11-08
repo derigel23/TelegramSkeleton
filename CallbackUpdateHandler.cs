@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Autofac.Features.Metadata;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -15,9 +14,9 @@ namespace Team23.TelegramSkeleton
     where TMetadata : Attribute, IHandlerAttribute<CallbackQuery, TContext>
   {
     private readonly ITelegramBotClient myTelegramBotClient;
-    private readonly IEnumerable<Meta<Func<Update, ICallbackQueryHandler<TContext>>, TMetadata>> myCallbackQueryHandlers;
+    private readonly IEnumerable<Lazy<Func<Update, ICallbackQueryHandler<TContext>>, TMetadata>> myCallbackQueryHandlers;
 
-    protected CallbackUpdateHandler(ITelegramBotClient telegramBotClient, IEnumerable<Meta<Func<Update, ICallbackQueryHandler<TContext>>, TMetadata>> callbackQueryHandlers)
+    protected CallbackUpdateHandler(ITelegramBotClient telegramBotClient, IEnumerable<Lazy<Func<Update, ICallbackQueryHandler<TContext>>, TMetadata>> callbackQueryHandlers)
     {
       myTelegramBotClient = telegramBotClient;
       myCallbackQueryHandlers = callbackQueryHandlers;

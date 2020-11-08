@@ -73,9 +73,12 @@ namespace Team23.TelegramSkeleton
           foreach (var handlerAttribute in CustomAttributeExtensions.GetCustomAttributes(t.GetTypeInfo(), true))
           {
             if (!handlerAttribute.GetType().InheritsOrImplements(typeof(IHandlerAttribute<,>))) continue;
-            foreach (var propertyInfo in handlerAttribute.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            foreach (var propertyInfo in handlerAttribute.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
-              metadata.Add(propertyInfo.Name, propertyInfo.GetValue(handlerAttribute));
+              if (propertyInfo.CanRead && propertyInfo.CanWrite)
+              {
+                metadata.Add(propertyInfo.Name, propertyInfo.GetValue(handlerAttribute));
+              }
             }
           }
           return metadata;

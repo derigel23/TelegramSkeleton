@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Autofac.Features.Metadata;
 using JetBrains.Annotations;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
@@ -17,14 +16,12 @@ namespace Team23.TelegramSkeleton
   {
     private readonly string myTelemetryTypeName;
     private readonly TelemetryClient myTelemetryClient;
-    private readonly IEnumerable<Meta<Func<Update, IUpdateHandler>, UpdateHandlerAttribute>> myUpdateHandlers;
+    private readonly IEnumerable<Lazy<Func<Update, IUpdateHandler>, UpdateHandlerAttribute>> myUpdateHandlers;
 
-    public TelegramController(ITelegramBotClient bot, TelemetryClient telemetryClient,
-      IEnumerable<Meta<Func<Update, IUpdateHandler>, UpdateHandlerAttribute>> updateHandlers)
+    public TelegramController(ITelegramBotClient bot, TelemetryClient telemetryClient, IEnumerable<Lazy<Func<Update, IUpdateHandler>, UpdateHandlerAttribute>> updateHandlers)
       : this(telemetryClient, updateHandlers, bot.GetType().Name) { }
 
-    protected TelegramController(TelemetryClient telemetryClient,
-      IEnumerable<Meta<Func<Update, IUpdateHandler>, UpdateHandlerAttribute>> updateHandlers, string telemetryTypeName = null)
+    protected TelegramController(TelemetryClient telemetryClient, IEnumerable<Lazy<Func<Update, IUpdateHandler>, UpdateHandlerAttribute>> updateHandlers, string telemetryTypeName = null)
     {
       myTelemetryTypeName = telemetryTypeName;
       myTelemetryClient = telemetryClient;

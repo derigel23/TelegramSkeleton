@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Autofac.Features.Metadata;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -12,9 +11,9 @@ namespace Team23.TelegramSkeleton
   [UpdateHandler(UpdateType = UpdateType.InlineQuery)]
   public class InlineQueryUpdateHandler : IUpdateHandler
   {
-    private readonly IEnumerable<Meta<Func<IInlineQueryHandler>, InlineQueryHandlerAttribute>> myInlineQueryHandlers;
+    private readonly IEnumerable<Lazy<Func<IInlineQueryHandler>, InlineQueryHandlerAttribute>> myInlineQueryHandlers;
 
-    public InlineQueryUpdateHandler(IEnumerable<Meta<Func<IInlineQueryHandler>, InlineQueryHandlerAttribute>> inlineQueryHandlers)
+    public InlineQueryUpdateHandler(IEnumerable<Lazy<Func<IInlineQueryHandler>, InlineQueryHandlerAttribute>> inlineQueryHandlers)
     {
       myInlineQueryHandlers = inlineQueryHandlers;
     }

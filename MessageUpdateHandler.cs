@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Autofac.Features.Metadata;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -14,9 +13,9 @@ namespace Team23.TelegramSkeleton
     where TMessageHandler :IMessageHandler<TMessageContext, TMessageResult>
     where TMessageMetadata : Attribute, IHandlerAttribute<Message, (UpdateType, TMessageContext)>
   {
-    private readonly IEnumerable<Meta<Func<Message, TMessageHandler>, TMessageMetadata>> myMessageHandlers;
+    private readonly IEnumerable<Lazy<Func<Message, TMessageHandler>, TMessageMetadata>> myMessageHandlers;
 
-    protected MessageUpdateHandler(IEnumerable<Meta<Func<Message, TMessageHandler>, TMessageMetadata>> messageHandlers)
+    protected MessageUpdateHandler(IEnumerable<Lazy<Func<Message, TMessageHandler>, TMessageMetadata>> messageHandlers)
     {
       myMessageHandlers = messageHandlers;
     }
