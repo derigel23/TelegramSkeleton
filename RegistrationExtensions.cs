@@ -51,6 +51,9 @@ namespace Team23.TelegramSkeleton
         .AddTypedClient<IEnumerable<ITelegramBotClient>>(botCollectionFactory)
         .AddTypedClient<IEnumerable<ITelegramBotClientEx>>(botCollectionFactory)
         .AddTypedClient<IEnumerable<TTelegramBotClient>>(botCollectionFactory)
+        .AddTypedClient<IDictionary<int, ITelegramBotClient>>((client, provider) => botCollectionFactory(client, provider).ToDictionary(_ => _.BotId, _ => (ITelegramBotClient)_))
+        .AddTypedClient<IDictionary<int, ITelegramBotClientEx>>((client, provider) => botCollectionFactory(client, provider).ToDictionary(_ => _.BotId, _ => (ITelegramBotClientEx)_))
+        .AddTypedClient<IDictionary<int, TTelegramBotClient>>((client, provider) => botCollectionFactory(client, provider).ToDictionary(_ => _.BotId))
         .AddTypedClient<ITelegramBotClient>((Func<HttpClient, IServiceProvider, TTelegramBotClient>) BotFactory)
         .AddTypedClient<ITelegramBotClientEx>((Func<HttpClient, IServiceProvider, TTelegramBotClient>) BotFactory);
 
