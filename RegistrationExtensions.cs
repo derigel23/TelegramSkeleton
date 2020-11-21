@@ -14,6 +14,11 @@ namespace Team23.TelegramSkeleton
   {
     public static void RegisterTelegramClients<TTelegramBotClient>(this IServiceCollection services, Func<IServiceProvider, string[]> tokensFactory)
       where TTelegramBotClient : class, ITelegramBotClientEx
+      => RegisterTelegramClients<TTelegramBotClient, ITelegramBotClientEx>(services, tokensFactory);
+    
+    public static void RegisterTelegramClients<TTelegramBotClient, TITelegramBotClient>(this IServiceCollection services, Func<IServiceProvider, string[]> tokensFactory)
+      where TTelegramBotClient : class, TITelegramBotClient
+      where TITelegramBotClient : class, ITelegramBotClientEx
     {
       Func<HttpClient, IServiceProvider, IEnumerable<TTelegramBotClient>> botCollectionFactory = (client, provider) =>
       {
@@ -47,16 +52,17 @@ namespace Team23.TelegramSkeleton
         return default;
       }
 
-      services.AddHttpClient(nameof(TTelegramBotClient))
+      services
+        .AddHttpClient(nameof(TTelegramBotClient))
         .AddTypedClient<IEnumerable<ITelegramBotClient>>(botCollectionFactory)
         .AddTypedClient<IEnumerable<ITelegramBotClientEx>>(botCollectionFactory)
-        .AddTypedClient<IEnumerable<TTelegramBotClient>>(botCollectionFactory)
+        .AddTypedClient<IEnumerable<TITelegramBotClient>>(botCollectionFactory)
         .AddTypedClient<IDictionary<int, ITelegramBotClient>>((client, provider) => botCollectionFactory(client, provider).ToDictionary(_ => _.BotId, _ => (ITelegramBotClient)_))
         .AddTypedClient<IDictionary<int, ITelegramBotClientEx>>((client, provider) => botCollectionFactory(client, provider).ToDictionary(_ => _.BotId, _ => (ITelegramBotClientEx)_))
-        .AddTypedClient<IDictionary<int, TTelegramBotClient>>((client, provider) => botCollectionFactory(client, provider).ToDictionary(_ => _.BotId))
+        .AddTypedClient<IDictionary<int, TITelegramBotClient>>((client, provider) => botCollectionFactory(client, provider).ToDictionary(_ => _.BotId, _ => (TITelegramBotClient)_))
         .AddTypedClient<ITelegramBotClient>((Func<HttpClient, IServiceProvider, TTelegramBotClient>) BotFactory)
-        .AddTypedClient<ITelegramBotClientEx>((Func<HttpClient, IServiceProvider, TTelegramBotClient>) BotFactory);
-
+        .AddTypedClient<ITelegramBotClientEx>((Func<HttpClient, IServiceProvider, TTelegramBotClient>) BotFactory)
+        .AddTypedClient<TITelegramBotClient>((Func<HttpClient, IServiceProvider, TTelegramBotClient>) BotFactory);
     }
 
     public static void RegisterTelegramSkeleton<TTelegramBotClient>(this ContainerBuilder builder, Assembly assembly = null)
