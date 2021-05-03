@@ -19,11 +19,6 @@ namespace Team23.TelegramSkeleton
       myTelemetryClient = telemetryClient;
     }
 
-    public TelegramBotClientEx(TelemetryClient telemetryClient, string token, IWebProxy webProxy) : base(token, webProxy)
-    {
-      myTelemetryClient = telemetryClient;
-    }
-
     public async Task AnswerInlineQueryWithValidationAsync(string inlineQueryId, IReadOnlyCollection<InlineQueryResultBase> results, int? cacheTime = null,
       bool isPersonal = false, string nextOffset = null, string switchPmText = null, string switchPmParameter = null,
       CancellationToken cancellationToken = default)
