@@ -38,34 +38,35 @@ namespace Team23.TelegramSkeleton
         return Enumerable.Empty<T>();
       }
 
-      IDictionary<int, T> BotDictionaryFactory<T>(HttpClient client, IServiceProvider provider)
+      IDictionary<long, T> BotDictionaryFactory<T>(HttpClient client, IServiceProvider provider)
         where T : class, ITelegramBotClient
       {
         var retriever = provider.GetService<Func<HttpClient, string, TTelegramBotClient>>();
         if (tokensFactory(provider) is { } tokens)
         {
-          var result = new Dictionary<int, T>(tokens.Length);
+          var result = new Dictionary<long, T>(tokens.Length);
           foreach (var token in tokens)
           {
-            var bot = retriever(client, token) as T;
-            if (bot == null) continue;
-            result[bot.BotId] = bot;
+            if (retriever(client, token) is T {BotId: {} botId} bot)
+            {
+              result[botId] = bot;
+            }
           }
 
           return result;
         }
 
-        return new Dictionary<int, T>(0);
+        return new Dictionary<long, T>(0);
 
       }
 
       T BotFactory<T>(HttpClient client, IServiceProvider provider)
         where T : ITelegramBotClient
       {
-        var registeredBots = provider.GetService<IDictionary<int, T>>();
+        var registeredBots = provider.GetService<IDictionary<long, T>>();
         if (provider.GetService<IActionContextAccessor>() is {ActionContext: { } actionContext} && actionContext.RouteData.Values.TryGetValue(nameof(ITelegramBotClient.BotId), out var routeBotId))
         {
-          var botId = Convert.ToInt32(routeBotId);
+          var botId = Convert.ToInt64(routeBotId);
           if (registeredBots.TryGetValue(botId, out var bot))
             return bot;
         }

@@ -28,7 +28,7 @@ namespace Team23.TelegramSkeleton
       myUpdateHandlers = updateHandlers;
     }
 
-    [HttpPost("/update/{" + nameof(ITelegramBotClient.BotId) + ":int?}")]
+    [HttpPost("/update/{" + nameof(ITelegramBotClient.BotId) + ":long?}")]
     // ReSharper disable once InconsistentNaming
     public async Task<IActionResult> Update([CanBeNull, FromBody] Update update, int? BotId = null, CancellationToken cancellationToken = default)
     {
