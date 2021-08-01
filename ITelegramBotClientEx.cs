@@ -10,7 +10,7 @@ namespace Team23.TelegramSkeleton
   {
     Task AnswerInlineQueryWithValidationAsync(
       string inlineQueryId,
-      IReadOnlyCollection<InlineQueryResultBase> results,
+      IReadOnlyCollection<InlineQueryResult> results,
       int? cacheTime = null,
       bool isPersonal = false,
       string nextOffset = null,

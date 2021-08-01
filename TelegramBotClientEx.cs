@@ -19,7 +19,7 @@ namespace Team23.TelegramSkeleton
       myTelemetryClient = telemetryClient;
     }
 
-    public async Task AnswerInlineQueryWithValidationAsync(string inlineQueryId, IReadOnlyCollection<InlineQueryResultBase> results, int? cacheTime = null,
+    public async Task AnswerInlineQueryWithValidationAsync(string inlineQueryId, IReadOnlyCollection<InlineQueryResult> results, int? cacheTime = null,
       bool isPersonal = false, string nextOffset = null, string switchPmText = null, string switchPmParameter = null,
       CancellationToken cancellationToken = default)
     {
@@ -32,7 +32,7 @@ namespace Team23.TelegramSkeleton
             new DuplicateNameException(result.Id), new Dictionary<string, string> { { nameof(ITelegramBotClient.BotId), BotId.ToString() } });
         }
       }
-      await AnswerInlineQueryAsync(inlineQueryId, results, cacheTime, isPersonal, nextOffset, switchPmText, switchPmParameter, cancellationToken)
+      await this.AnswerInlineQueryAsync(inlineQueryId, results, cacheTime, isPersonal, nextOffset, switchPmText, switchPmParameter, cancellationToken)
         .ConfigureAwait(false);
     }
   }
