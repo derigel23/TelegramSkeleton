@@ -15,7 +15,7 @@
 
     <ItemGroup>
       <PackageReference Include="Autofac" Version="6.2.0" />
-      <PackageReference Include="JetBrains.Annotations" Version="2021.1.0" />
+      <PackageReference Include="JetBrains.Annotations" Version="2021.2.0" />
       <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.17.0" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.6" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.6">
@@ -24,7 +24,7 @@
       </PackageReference>
       <PackageReference Include="NodaTime" Version="3.0.5" />
       <PackageReference Include="NodaTime.Testing" Version="3.0.5" />
-      <PackageReference Include="Telegram.Bot" Version="17.0.0-alpha.2" />
+      <PackageReference Include="Telegram.Bot" Version="17.0.0-alpha.3" />
     </ItemGroup>
  
     <ItemGroup>
