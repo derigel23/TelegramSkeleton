@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -8,21 +9,26 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 
 namespace Team23.TelegramSkeleton
 {
-  public class StatusController : Controller
+  public abstract class StatusController<TContext, TResult, TCommandHandlerAttribute> : Controller
+    where TCommandHandlerAttribute : Attribute, IBotCommandHandlerAttribute<TContext>
   {
     private readonly IEnumerable<ITelegramBotClient> myBots;
     private readonly IEnumerable<IStatusProvider> myStatusProviders;
 
-    public StatusController(IEnumerable<ITelegramBotClient> bots, IEnumerable<IStatusProvider> statusProviders)
+    private readonly IEnumerable<Lazy<Func<Message, IBotCommandHandler<TContext, TResult>>, TCommandHandlerAttribute>> myCommandHandlers;
+
+    protected StatusController(IEnumerable<ITelegramBotClient> bots, IEnumerable<IStatusProvider> statusProviders, IEnumerable<Lazy<Func<Message, IBotCommandHandler<TContext, TResult>>, TCommandHandlerAttribute>> commandHandlers)
     {
       myBots = bots;
       myStatusProviders = statusProviders;
+      myCommandHandlers = commandHandlers;
     }
 
-    private static readonly JsonSerializerSettings NoUnixDateTimeJsonSerializerSettings = new JsonSerializerSettings()
+    private static readonly JsonSerializerSettings NoUnixDateTimeJsonSerializerSettings = new()
     {
       ContractResolver = new NoUnixDateTimeContractResolver()
     };
@@ -67,11 +73,24 @@ namespace Team23.TelegramSkeleton
     [HttpGet("/refresh")]
     public async Task<IActionResult> Refresh(CancellationToken cancellationToken)
     {
+      var botCommands = myCommandHandlers
+        .ToLookup(handler => handler.Metadata.Scope?.Type);
+
       foreach (var bot in myBots)
       {
         var webHookUrl = Url.Action("Update", "Telegram", new { bot.BotId }, protocol: "https");
       
         await bot.SetWebhookAsync(webHookUrl, cancellationToken: cancellationToken);
+
+        var everyWhereCommands = botCommands[default].ToList();
+        
+        foreach (var botCommandScopeType in BotCommandHandler.SupportedBotCommandScopeTypes)
+        {
+          var commands = botCommands[botCommandScopeType].Concat(everyWhereCommands)
+            .OrderBy(handler => handler.Metadata.Order)
+            .Select(handler => handler.Metadata.Command);
+          await bot.SetMyCommandsAsync(commands, BotCommandHandler.GetScope(botCommandScopeType), cancellationToken: cancellationToken);
+        }
       }
 
       return RedirectToAction("Status");
@@ -82,6 +101,11 @@ namespace Team23.TelegramSkeleton
     {
       foreach (var bot in myBots)
       {
+        foreach (var scopeType in BotCommandHandler.SupportedBotCommandScopeTypes)
+        {
+          await bot.DeleteMyCommandsAsync(BotCommandHandler.GetScope(scopeType), cancellationToken: cancellationToken);
+        }
+
         await bot.SetWebhookAsync("", cancellationToken: cancellationToken);
         await bot.GetUpdatesAsync(-1, 1, cancellationToken: cancellationToken);
       }
