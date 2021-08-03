@@ -9,9 +9,9 @@ namespace Team23.TelegramSkeleton
 {
   public interface IBotCommandHandlerAttribute<in TContext> : IHandlerAttribute<MessageEntityEx, TContext>
   {
-    public BotCommandScope[] Scopes { get; }      
-    public BotCommand Command { get; }      
-    [CanBeNull] public string[] Aliases { get; }
+    public BotCommandScope[] Scopes { get; set; }      
+    public BotCommand Command { get; set; }      
+    [CanBeNull] public string[] Aliases { get; set; }
   }
 
   public static class BotCommandHandler
