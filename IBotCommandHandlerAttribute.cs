@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using JetBrains.Annotations;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -10,7 +11,7 @@ namespace Team23.TelegramSkeleton
   {
     public BotCommandScope Scope { get; }      
     public BotCommand Command { get; }      
-    public string[] Aliases { get; }      
+    [CanBeNull] public string[] Aliases { get; }      
   }
 
   public static class BotCommandHandler
