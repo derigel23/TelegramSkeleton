@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using JetBrains.Annotations;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -9,8 +8,9 @@ namespace Team23.TelegramSkeleton
 {
   public interface IBotCommandHandlerAttribute<in TContext> : IHandlerAttribute<MessageEntityEx, TContext>
   {
-    public BotCommandScope Scope { get; [UsedImplicitly] set; }      
-    public BotCommand Command { get; [UsedImplicitly] set; }      
+    public BotCommandScope Scope { get; }      
+    public BotCommand Command { get; }      
+    public string[] Aliases { get; }      
   }
 
   public static class BotCommandHandler
@@ -39,20 +39,21 @@ namespace Team23.TelegramSkeleton
     {
       foreach (var metadata in handler.GetType().GetCustomAttributes().OfType<IBotCommandHandlerAttribute<TContext>>())
       {
-        if (!ShouldProcess(metadata.Scope, entity, context))
+        if (!ShouldProcess(metadata, entity, context))
           return false;
       }
 
       return true;
     }
 
-    public static bool ShouldProcess<TContext>(BotCommandScope commandScope, MessageEntityEx entity, TContext context)
+    public static bool ShouldProcess<TContext>(IBotCommandHandlerAttribute<TContext> attribute, MessageEntityEx entity, TContext context)
     {
-      if (entity.Type != MessageEntityType.BotCommand) return false;
+      if (entity.Type != MessageEntityType.BotCommand)
+        return false;
 
       var message = entity.Message;
-      
-      return commandScope switch
+
+      if (attribute.Scope switch
       {
         BotCommandScopeDefault => true,
         BotCommandScopeAllPrivateChats => message.Chat.Type is ChatType.Private or ChatType.Sender,
@@ -62,7 +63,22 @@ namespace Team23.TelegramSkeleton
         BotCommandScopeChatAdministrators scope => message.Chat == scope.ChatId, // TODO: Check for admins
         BotCommandScopeChatMember scope => message.Chat == scope.ChatId && message.From?.Id == scope.UserId,
         _ => true
-      };
+      })
+      {
+        // check command (skip first slash)
+        var command = entity.Command.Subsegment(1);
+        if (command.Equals(attribute.Command.Command, StringComparison.OrdinalIgnoreCase))
+          return true;
+
+        var aliases = attribute.Aliases ?? Array.Empty<string>();
+        for (var i = 0; i < aliases.Length; i++)
+        {
+          if (command.Equals(aliases[i], StringComparison.OrdinalIgnoreCase))
+            return true;
+        }
+      }
+
+      return false;
     }
   }
 }
