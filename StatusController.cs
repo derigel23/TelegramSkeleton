@@ -74,7 +74,9 @@ namespace Team23.TelegramSkeleton
     public async Task<IActionResult> Refresh(CancellationToken cancellationToken)
     {
       var botCommands = myCommandHandlers
-        .ToLookup(handler => handler.Metadata.Scope?.Type);
+        .SelectMany(handler =>
+          handler.Metadata.Scopes.Select(scope => KeyValuePair.Create(scope.Type, handler.Metadata)))
+        .ToLookup(pair => pair.Key, pair => pair.Value);
 
       foreach (var bot in myBots)
       {
@@ -82,14 +84,13 @@ namespace Team23.TelegramSkeleton
       
         await bot.SetWebhookAsync(webHookUrl, cancellationToken: cancellationToken);
 
-        var everyWhereCommands = botCommands[default].ToList();
-        
-        foreach (var botCommandScopeType in BotCommandHandler.SupportedBotCommandScopeTypes)
+        foreach (var group in botCommands)
         {
-          var commands = botCommands[botCommandScopeType].Concat(everyWhereCommands)
-            .OrderBy(handler => handler.Metadata.Order)
-            .Select(handler => handler.Metadata.Command);
-          await bot.SetMyCommandsAsync(commands, BotCommandHandler.GetScope(botCommandScopeType), cancellationToken: cancellationToken);
+          var commands = group
+            .OrderBy(metadata => metadata.Order)
+            .Select(metadata => metadata.Command);
+          // TODO: use original scope from metadata
+          await bot.SetMyCommandsAsync(commands, BotCommandHandler.GetScope(group.Key), cancellationToken: cancellationToken);
         }
       }
 

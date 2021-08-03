@@ -9,9 +9,9 @@ namespace Team23.TelegramSkeleton
 {
   public interface IBotCommandHandlerAttribute<in TContext> : IHandlerAttribute<MessageEntityEx, TContext>
   {
-    public BotCommandScope Scope { get; }      
+    public BotCommandScope[] Scopes { get; }      
     public BotCommand Command { get; }      
-    [CanBeNull] public string[] Aliases { get; }      
+    [CanBeNull] public string[] Aliases { get; }
   }
 
   public static class BotCommandHandler
@@ -52,30 +52,36 @@ namespace Team23.TelegramSkeleton
       if (entity.Type != MessageEntityType.BotCommand)
         return false;
 
+      // check command (skip first slash)
+      var command = entity.Command.Subsegment(1);
+      var commandMatch = command.Equals(attribute.Command.Command, StringComparison.OrdinalIgnoreCase);
+
+      var aliases = attribute.Aliases ?? Array.Empty<string>();
+      for (var i = 0; i < aliases.Length && !commandMatch; i++)
+      {
+        commandMatch = command.Equals(aliases[i], StringComparison.OrdinalIgnoreCase);
+      }
+
+      if (!commandMatch) return false;
+      
       var message = entity.Message;
 
-      if (attribute.Scope switch
+      // check command scopes
+      foreach (var commandScope in attribute.Scopes)
       {
-        BotCommandScopeDefault => true,
-        BotCommandScopeAllPrivateChats => message.Chat.Type is ChatType.Private or ChatType.Sender,
-        BotCommandScopeAllGroupChats => message.Chat.Type is ChatType.Group or ChatType.Supergroup,
-        BotCommandScopeAllChatAdministrators => message.Chat.Type is ChatType.Group or ChatType.Supergroup, // TODO: Check for admins
-        BotCommandScopeChat scope => message.Chat == scope.ChatId,
-        BotCommandScopeChatAdministrators scope => message.Chat == scope.ChatId, // TODO: Check for admins
-        BotCommandScopeChatMember scope => message.Chat == scope.ChatId && message.From?.Id == scope.UserId,
-        _ => true
-      })
-      {
-        // check command (skip first slash)
-        var command = entity.Command.Subsegment(1);
-        if (command.Equals(attribute.Command.Command, StringComparison.OrdinalIgnoreCase))
-          return true;
-
-        var aliases = attribute.Aliases ?? Array.Empty<string>();
-        for (var i = 0; i < aliases.Length; i++)
+        if (commandScope switch
         {
-          if (command.Equals(aliases[i], StringComparison.OrdinalIgnoreCase))
-            return true;
+          BotCommandScopeDefault => true,
+          BotCommandScopeAllPrivateChats => message.Chat.Type is ChatType.Private or ChatType.Sender,
+          BotCommandScopeAllGroupChats => message.Chat.Type is ChatType.Group or ChatType.Supergroup,
+          BotCommandScopeAllChatAdministrators => message.Chat.Type is ChatType.Group or ChatType.Supergroup, // TODO: Check for admins
+          BotCommandScopeChat scope => message.Chat == scope.ChatId,
+          BotCommandScopeChatAdministrators scope => message.Chat == scope.ChatId, // TODO: Check for admins
+          BotCommandScopeChatMember scope => message.Chat == scope.ChatId && message.From?.Id == scope.UserId,
+          _ => true
+        })
+        {
+          return true;
         }
       }
 
