@@ -37,11 +37,11 @@ namespace Team23.TelegramSkeleton
       where THandler : IHandler<TData, TContext, TResult>
       where TMetadata : Attribute, IHandlerAttribute<TData, TContext>
     {
-      foreach (var h in handlers.OrderBy(meta => meta.Metadata.Order))
+      foreach (var (handler, metadata) in handlers.OrderBy(meta => meta.Metadata.Order))
       {
-        if (!h.Metadata.ShouldProcess(data, context))
+        if (!metadata.ShouldProcess(data, context))
           continue;
-        var result = await h.Value().Handle(data, context, cancellationToken).ConfigureAwait(false);
+        var result = await handler().Handle(data, context, cancellationToken).ConfigureAwait(false);
         if (!EqualityComparer<TResult>.Default.Equals(result, default))
           return result;
       }

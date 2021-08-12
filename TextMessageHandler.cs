@@ -25,7 +25,14 @@ namespace Team23.TelegramSkeleton
 
     public virtual async Task<TResult> Handle(Message message, (UpdateType updateType, TContext context) _, CancellationToken cancellationToken = default)
     {
-      var handlers = myMessageEntityHandlers.Bind(message).ToList();
+      return await Handle(message, message, _.context, myMessageEntityHandlers, cancellationToken);
+    }
+    
+    protected async Task<TResult> Handle<TParameter, TMessageEntityHandler, TTMetadata>(TParameter parameter, Message message, TContext context, IEnumerable<Lazy<Func<TParameter, TMessageEntityHandler>, TTMetadata>> entityHandlers, CancellationToken cancellationToken = default)
+      where TMessageEntityHandler : IMessageEntityHandler<TContext, TResult>
+      where TTMetadata : Attribute, IHandlerAttribute<MessageEntityEx, TContext>
+    {
+      var handlers = entityHandlers.Bind(parameter).ToList();
       TResult result = default;
       string botName = null;
       foreach (var entity in message.Entities ?? Enumerable.Empty<MessageEntity>())
@@ -37,7 +44,7 @@ namespace Team23.TelegramSkeleton
           if (!commandBot.Equals(botName ??= (await myBot.GetMeAsync(cancellationToken)).Username, StringComparison.OrdinalIgnoreCase))
             continue;
         }
-        result = await HandlerExtensions<TResult>.Handle(handlers, entityEx, _.context, cancellationToken).ConfigureAwait(false);
+        result = await HandlerExtensions<TResult>.Handle(handlers, entityEx, context, cancellationToken).ConfigureAwait(false);
         if (!EqualityComparer<TResult>.Default.Equals(result, default)) break;
       }
 
