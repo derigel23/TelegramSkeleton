@@ -29,7 +29,7 @@ namespace Team23.TelegramSkeleton
           var result = new T[tokens.Length];
           for (var i = 0; i < tokens.Length; i++)
           {
-            result[i] = retriever(client, tokens[i]) as T;
+            result[i] = retriever?.Invoke(client, tokens[i]) as T;
           }
 
           return result;
@@ -47,7 +47,7 @@ namespace Team23.TelegramSkeleton
           var result = new Dictionary<long, T>(tokens.Length);
           foreach (var token in tokens)
           {
-            if (retriever(client, token) is T {BotId: {} botId} bot)
+            if (retriever?.Invoke(client, token) is T { BotId: {} botId } bot)
             {
               result[botId] = bot;
             }
@@ -64,7 +64,9 @@ namespace Team23.TelegramSkeleton
         where T : ITelegramBotClient
       {
         var registeredBots = provider.GetService<IDictionary<long, T>>();
-        if (provider.GetService<IActionContextAccessor>() is {ActionContext: { } actionContext} && actionContext.RouteData.Values.TryGetValue(nameof(ITelegramBotClient.BotId), out var routeBotId))
+        if (registeredBots != null &&
+            provider.GetService<IActionContextAccessor>() is { ActionContext: { } actionContext } &&
+            actionContext.RouteData.Values.TryGetValue(nameof(ITelegramBotClient.BotId), out var routeBotId))
         {
           var botId = Convert.ToInt64(routeBotId);
           if (registeredBots.TryGetValue(botId, out var bot))
@@ -131,8 +133,7 @@ namespace Team23.TelegramSkeleton
         if (parent == currentChild || HasAnyInterfaces(parent, currentChild))
           return true;
 
-        currentChild = currentChild.BaseType != null
-                       && currentChild.BaseType.IsGenericType
+        currentChild = currentChild.BaseType is { IsGenericType: true }
           ? currentChild.BaseType.GetGenericTypeDefinition()
           : currentChild.BaseType;
 

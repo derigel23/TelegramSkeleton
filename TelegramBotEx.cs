@@ -12,7 +12,7 @@ namespace Team23.TelegramSkeleton
     public static async Task EditMessageReplyMarkupAsync(
       this ITelegramBotClient botClient,
       CallbackQuery callbackQuery,
-      InlineKeyboardMarkup? replyMarkup = default,
+      InlineKeyboardMarkup replyMarkup = default,
       CancellationToken cancellationToken = default
     )
     {
