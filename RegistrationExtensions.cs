@@ -26,10 +26,14 @@ namespace Team23.TelegramSkeleton
         var retriever = provider.GetService<Func<HttpClient, string, TTelegramBotClient>>();
         if (tokensFactory(provider) is { } tokens)
         {
-          var result = new T[tokens.Length];
-          for (var i = 0; i < tokens.Length; i++)
+          var result = new List<T>(tokens.Length);
+          foreach (var token in tokens)
           {
-            result[i] = retriever?.Invoke(client, tokens[i]) as T;
+            if (retriever?.Invoke(client, token) is T bot)
+            {
+              bot.ExceptionsParser = ExceptionParser.Instance;
+              result.Add(bot);
+            }
           }
 
           return result;
@@ -49,6 +53,7 @@ namespace Team23.TelegramSkeleton
           {
             if (retriever?.Invoke(client, token) is T { BotId: {} botId } bot)
             {
+              bot.ExceptionsParser = ExceptionParser.Instance;
               result[botId] = bot;
             }
           }

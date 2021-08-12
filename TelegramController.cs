@@ -72,6 +72,11 @@ namespace Team23.TelegramSkeleton
         myTelemetryClient.TrackException(new ExceptionTelemetry(operationCanceledException) { SeverityLevel = SeverityLevel.Warning });
         return Ok();
       }
+      catch (ApiRequestTimeoutException)
+      {
+        operation.Telemetry.Success = false;
+        return Ok();
+      }
       catch (Exception ex)
       {
         operation.Telemetry.Success = false;
