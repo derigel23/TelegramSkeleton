@@ -36,18 +36,18 @@ namespace Team23.TelegramSkeleton
       };
     }
 
-    public static bool ShouldProcess<TContext, TResult>(this IBotCommandHandler<TContext, TResult> handler, MessageEntityEx entity, TContext context)
+    public static bool ShouldProcess<TContext, TResult>(this IBotCommandHandler<TContext, TResult> handler, MessageEntityEx entity, TContext context, Predicate<MessageEntityEx> alternativeCheck = default)
     {
       foreach (var metadata in handler.GetType().GetCustomAttributes().OfType<IBotCommandHandlerAttribute<TContext>>())
       {
-        if (!ShouldProcess(metadata, entity, context))
+        if (!ShouldProcess(metadata, entity, context, alternativeCheck))
           return false;
       }
 
       return true;
     }
 
-    public static bool ShouldProcess<TContext>(IBotCommandHandlerAttribute<TContext> attribute, MessageEntityEx entity, TContext context)
+    public static bool ShouldProcess<TContext>(IBotCommandHandlerAttribute<TContext> attribute, MessageEntityEx entity, TContext context, Predicate<MessageEntityEx> alternativeCheck = default)
     {
       if (entity.Type != MessageEntityType.BotCommand)
         return false;
@@ -84,6 +84,9 @@ namespace Team23.TelegramSkeleton
           return true;
         }
       }
+
+      if (alternativeCheck?.Invoke(entity) ?? false)
+        return true;
 
       return false;
     }

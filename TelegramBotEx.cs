@@ -24,7 +24,7 @@ namespace Team23.TelegramSkeleton
           break;
         
         case { Message: { } message }:
-          await botClient.EditMessageReplyMarkupAsync(message.Chat, callbackQuery.Message.MessageId, replyMarkup, cancellationToken).ConfigureAwait(false);
+          await botClient.EditMessageReplyMarkupAsync(message.Chat, message.MessageId, replyMarkup, cancellationToken).ConfigureAwait(false);
           break;
         
         default:
@@ -63,6 +63,29 @@ namespace Team23.TelegramSkeleton
         await botClient.EditMessageTextAsync(inlineMessageId, content.MessageText, content.ParseMode, content.Entities, content.DisableWebPagePreview,
           replyMarkup, cancellationToken).ConfigureAwait(false);
 
+
+    public static async Task EditMessageTextAsync(
+      this ITelegramBotClient botClient,
+      CallbackQuery callbackQuery,
+      InputTextMessageContent content,
+      InlineKeyboardMarkup replyMarkup = default,
+      CancellationToken cancellationToken = default
+    )
+    {
+      switch (callbackQuery)
+      {
+        case { InlineMessageId: { } inlineMessageId }:
+          await botClient.EditMessageTextAsync(inlineMessageId, content, replyMarkup, cancellationToken).ConfigureAwait(false);
+          break;
+        
+        case { Message: { } message }:
+          await botClient.EditMessageTextAsync(message.Chat, message.MessageId, content, replyMarkup, cancellationToken).ConfigureAwait(false);
+          break;
+        
+        default:
+          throw new ArgumentOutOfRangeException(nameof(callbackQuery));
+      }
+    }
 
   }
 }
