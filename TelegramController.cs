@@ -7,6 +7,7 @@ using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
@@ -14,12 +15,16 @@ namespace Team23.TelegramSkeleton
 {
   public class TelegramController : Controller
   {
+    private readonly ILogger myLogger;
     private readonly string myTelemetryTypeName;
     private readonly TelemetryClient myTelemetryClient;
     private readonly IEnumerable<Lazy<Func<Update, IUpdateHandler>, UpdateHandlerAttribute>> myUpdateHandlers;
 
-    public TelegramController(ITelegramBotClient bot, TelemetryClient telemetryClient, IEnumerable<Lazy<Func<Update, IUpdateHandler>, UpdateHandlerAttribute>> updateHandlers)
-      : this(telemetryClient, updateHandlers, bot.GetType().Name) { }
+    public TelegramController(ILogger logger, ITelegramBotClient bot, TelemetryClient telemetryClient, IEnumerable<Lazy<Func<Update, IUpdateHandler>, UpdateHandlerAttribute>> updateHandlers)
+      : this(telemetryClient, updateHandlers, bot.GetType().Name)
+    {
+      myLogger = logger;
+    }
 
     protected TelegramController(TelemetryClient telemetryClient, IEnumerable<Lazy<Func<Update, IUpdateHandler>, UpdateHandlerAttribute>> updateHandlers, string telemetryTypeName = null)
     {
