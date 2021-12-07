@@ -4,38 +4,79 @@ using System.ComponentModel;
 using System.Text;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InlineQueryResults;
 
 namespace Team23.TelegramSkeleton;
 
 public class TextBuilder 
 {
-  private readonly StringBuilder myStringBuilder = new ();
-  private readonly List<MessageEntity> myEntities = new ();
+  private readonly StringBuilder myStringBuilder;
+  private readonly List<MessageEntity> myEntities = new();
 
-  public IDisposable Bold()
+  public TextBuilder()
   {
-    return new Entity(MessageEntityType.Bold, this);
+    myStringBuilder = new();
   }
 
-  public TextBuilder Bold(string text)
+  public TextBuilder(string text)
   {
-    using (Bold())
+    myStringBuilder = new(text);
+  }
+
+  public TextBuilder Append(TextBuilder other)
+  {
+    var offset = myStringBuilder.Length;
+    myStringBuilder.Append(other.myStringBuilder);
+    foreach (var otherEntity in other.myEntities)
     {
-      myStringBuilder.Append(text);
+      myEntities.Add(new MessageEntity
+      {
+        Offset = otherEntity.Offset + offset,
+        Length = otherEntity.Length + offset,
+        Type = otherEntity.Type,
+        Url = otherEntity.Url,
+        User = otherEntity.User,
+        Language = otherEntity.Language,
+      });
     }
 
     return this;
   }
+  
+  public static implicit operator StringBuilder(TextBuilder builder) => builder.myStringBuilder;
+  public static StringBuilder operator ~(TextBuilder builder) => builder.myStringBuilder;
+  
+  public int Length
+  {
+    get => myStringBuilder.Length;
+    set => myStringBuilder.Length = value;
+  }
 
-  private class Entity : IDisposable
+  public override string ToString()
+  {
+    return myStringBuilder.ToString();
+  }
+
+  public IDisposable Entity(MessageEntity entity) =>
+    new EntityAction(entity, this);
+
+  public IDisposable Entity(MessageEntityType entityType) =>
+    new EntityAction(new MessageEntity { Type = entityType }, this);
+
+  public InputTextMessageContent ToTextMessageContent(bool? disableWebPreview = default) =>
+    new (myStringBuilder.ToString())
+    {
+      Entities = myEntities.ToArray(),
+      ParseMode = null,
+      DisableWebPagePreview = disableWebPreview
+    };
+
+  private class EntityAction : IDisposable
   {
     private readonly MessageEntity myEntity;
     private readonly TextBuilder myBuilder;
 
-    public Entity(MessageEntityType entityType, TextBuilder builder) :
-      this(new MessageEntity { Type = entityType }, builder) { }
-
-    public Entity(MessageEntity entity, TextBuilder builder)
+    public EntityAction(MessageEntity entity, TextBuilder builder)
     {
       myEntity = entity;
       myBuilder = builder;
