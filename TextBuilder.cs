@@ -32,7 +32,7 @@ public class TextBuilder
       myEntities.Add(new MessageEntity
       {
         Offset = otherEntity.Offset + offset,
-        Length = otherEntity.Length + offset,
+        Length = otherEntity.Length,
         Type = otherEntity.Type,
         Url = otherEntity.Url,
         User = otherEntity.User,
