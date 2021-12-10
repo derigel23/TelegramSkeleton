@@ -35,6 +35,19 @@ public static class TextBuilderEx
   }
 
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+  public static TextBuilder SanitizeNickname([NotNull] this TextBuilder builder, [CanBeNull] string text = null)
+  {
+    if (string.IsNullOrEmpty(text)) return builder;
+    StringBuilder sb = builder;
+    foreach (var c in text)
+    {
+      if (char.IsAscii(c))
+        sb.Append(c);
+    }
+    return builder;
+  }
+
+  [MethodImpl(MethodImplOptions.AggressiveInlining)]
   public static IDisposable Bold(this TextBuilder builder) =>
     builder.Entity(MessageEntityType.Bold);
 
