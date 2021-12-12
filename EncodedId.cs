@@ -24,7 +24,7 @@ public readonly record struct EncodedId<T1, T2>(T1 Id, T2 SubId)
     return Base58.Flickr.Encode(idBytes);
   }
 
-  public static implicit operator EncodedId<T1, T2>(string encodedId)
+  public static implicit operator EncodedId<T1, T2>(string? encodedId)
   {
     var id = Empty;
 

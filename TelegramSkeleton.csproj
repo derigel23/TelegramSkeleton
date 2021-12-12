@@ -6,6 +6,7 @@
         <PackageId>Team23.TelegramSkeleton</PackageId>
         <Authors>Team23</Authors>
         <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <DefineConstants>JETBRAINS_ANNOTATIONS</DefineConstants>
         <Version>1.2.0-alpha</Version>

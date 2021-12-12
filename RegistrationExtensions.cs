@@ -19,11 +19,11 @@ namespace Team23.TelegramSkeleton
 {
   public static class RegistrationExtensions
   {
-    public static void RegisterTelegramClients<TTelegramBotClient>(this IServiceCollection services, Func<IServiceProvider, string[]> tokensFactory)
+    public static void RegisterTelegramClients<TTelegramBotClient>(this IServiceCollection services, Func<IServiceProvider, string[]?> tokensFactory)
       where TTelegramBotClient : class, ITelegramBotClientEx
       => RegisterTelegramClients<TTelegramBotClient, ITelegramBotClientEx>(services, tokensFactory);
     
-    public static void RegisterTelegramClients<TTelegramBotClient, TITelegramBotClient>(this IServiceCollection services, Func<IServiceProvider, string[]> tokensFactory)
+    public static void RegisterTelegramClients<TTelegramBotClient, TITelegramBotClient>(this IServiceCollection services, Func<IServiceProvider, string[]?> tokensFactory)
       where TTelegramBotClient : class, TITelegramBotClient
       where TITelegramBotClient : class, ITelegramBotClientEx
     {
@@ -72,15 +72,14 @@ namespace Team23.TelegramSkeleton
 
       }
 
-      T BotFactory<T>(HttpClient client, IServiceProvider provider)
+      T? BotFactory<T>(HttpClient client, IServiceProvider provider)
         where T : ITelegramBotClient
       {
         var registeredBots = provider.GetService<IDictionary<long, T>>();
         if (registeredBots != null &&
             provider.GetService<IActionContextAccessor>() is { ActionContext: { } actionContext } &&
-            actionContext.RouteData.Values.TryGetValue(nameof(ITelegramBotClient.BotId), out var routeBotId))
+            TelegramController.DecodeBotId(actionContext, provider.GetService<IWebHookSaltProvider>(), out var botId))
         {
-          var botId = Convert.ToInt64(routeBotId);
           if (registeredBots.TryGetValue(botId, out var bot))
             return bot;
         }
@@ -123,7 +122,7 @@ namespace Team23.TelegramSkeleton
         .AddTypedClient(BotFactory<TITelegramBotClient>);
     }
 
-    public static void RegisterTelegramSkeleton<TTelegramBotClient>(this ContainerBuilder builder, Assembly assembly = null)
+    public static void RegisterTelegramSkeleton<TTelegramBotClient>(this ContainerBuilder builder, Assembly? assembly = null)
       where TTelegramBotClient : ITelegramBotClientEx
     {
       builder.RegisterType<TTelegramBotClient>().InstancePerDependency();
@@ -136,7 +135,7 @@ namespace Team23.TelegramSkeleton
         .AsSelf()
         .WithMetadata(t =>
         {
-          var metadata = new Dictionary<string, object>();
+          var metadata = new Dictionary<string, object?>();
           foreach (var handlerAttribute in CustomAttributeExtensions.GetCustomAttributes(t.GetTypeInfo(), true))
           {
             if (!handlerAttribute.GetType().InheritsOrImplements(typeof(IHandlerAttribute<,>))) continue;

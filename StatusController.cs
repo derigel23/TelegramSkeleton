@@ -20,9 +20,11 @@ namespace Team23.TelegramSkeleton
     private readonly IEnumerable<IStatusProvider> myStatusProviders;
 
     private readonly IEnumerable<Lazy<Func<Message, IBotCommandHandler<TContext, TResult>>, TCommandHandlerAttribute>> myCommandHandlers;
+    private readonly IWebHookSaltProvider? myWebHookSaltProvider;
 
-    protected StatusController(IEnumerable<ITelegramBotClient> bots, IEnumerable<IStatusProvider> statusProviders, IEnumerable<Lazy<Func<Message, IBotCommandHandler<TContext, TResult>>, TCommandHandlerAttribute>> commandHandlers)
+    protected StatusController(IWebHookSaltProvider? webHookSaltProvider, IEnumerable<ITelegramBotClient> bots, IEnumerable<IStatusProvider> statusProviders, IEnumerable<Lazy<Func<Message, IBotCommandHandler<TContext, TResult>>, TCommandHandlerAttribute>> commandHandlers)
     {
+      myWebHookSaltProvider = webHookSaltProvider;
       myBots = bots;
       myStatusProviders = statusProviders;
       myCommandHandlers = commandHandlers;
@@ -60,7 +62,7 @@ namespace Team23.TelegramSkeleton
           }))
         },
         { "Framework", System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription },
-        { "is64BitProcess", System.Environment.Is64BitProcess },
+        { "is64BitProcess", Environment.Is64BitProcess },
       };
       foreach (var statusProvider in myStatusProviders)
       {
@@ -80,7 +82,7 @@ namespace Team23.TelegramSkeleton
 
       foreach (var bot in myBots)
       {
-        var webHookUrl = Url.Action("Update", "Telegram", new { bot.BotId }, protocol: "https");
+        var webHookUrl = Url.Action("Update", "Telegram", TelegramController.EncodeBotId(bot.BotId, myWebHookSaltProvider), protocol: "https");
       
         await bot.SetWebhookAsync(webHookUrl, cancellationToken: cancellationToken);
 
