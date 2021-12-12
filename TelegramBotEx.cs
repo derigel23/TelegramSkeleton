@@ -34,7 +34,6 @@ namespace Team23.TelegramSkeleton
 
     public static async Task<Message> SendTextMessageAsync(this ITelegramBotClient botClient, ChatId chatId, InputTextMessageContent content, bool? disableNotification = default, int? replyToMessageId = default, bool? allowSendingWithoutReply = default, IReplyMarkup? replyMarkup = default, CancellationToken cancellationToken = default)
     {
-      if (replyMarkup == null) throw new ArgumentNullException(nameof(replyMarkup));
       return await botClient.SendTextMessageAsync(chatId, content.MessageText, content.ParseMode, content.Entities, content.DisableWebPagePreview, disableNotification, replyToMessageId, allowSendingWithoutReply, replyMarkup, cancellationToken)
         .ConfigureAwait(false);
     }
@@ -49,10 +48,9 @@ namespace Team23.TelegramSkeleton
         await botClient.EditMessageTextAsync(chatId, messageId, content.MessageText, content.ParseMode, content.Entities, content.DisableWebPagePreview,
           replyMarkup, cancellationToken).ConfigureAwait(false);
 
+    
     public static async Task EditMessageTextAsync(this ITelegramBotClient botClient, string inlineMessageId, InputTextMessageContent content, InlineKeyboardMarkup? replyMarkup = default, CancellationToken cancellationToken = default)
     {
-      if (replyMarkup == null) throw new ArgumentNullException(nameof(replyMarkup));
-      if (replyMarkup == null) throw new ArgumentNullException(nameof(replyMarkup));
       await botClient.EditMessageTextAsync(inlineMessageId, content.MessageText, content.ParseMode, content.Entities, content.DisableWebPagePreview, replyMarkup, cancellationToken).ConfigureAwait(false);
     }
 
