@@ -4,5 +4,5 @@ namespace Team23.TelegramSkeleton;
 
 public interface IWebHookSaltProvider
 {
-  [PublicAPI] public int? GetSalt(long? botId);
+  [PublicAPI] public long GetSalt();
 }

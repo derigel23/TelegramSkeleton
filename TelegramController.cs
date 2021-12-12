@@ -8,7 +8,7 @@ using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.AspNetCore.Mvc;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using EncodedBotId = Team23.TelegramSkeleton.EncodedId<long, int>;
+using EncodedBotId = Team23.TelegramSkeleton.EncodedId<long, long>;
 
 namespace Team23.TelegramSkeleton
 {
@@ -31,20 +31,21 @@ namespace Team23.TelegramSkeleton
     }
 
     public static string EncodeBotId(long? botId, IWebHookSaltProvider? webHookSaltProvider) =>
-      botId is { } id ? new EncodedBotId(id, webHookSaltProvider?.GetSalt(id) ?? default) : EncodedBotId.Empty;
+      botId is { } id && (webHookSaltProvider?.GetSalt() ?? default) is var salt ?
+        new EncodedBotId(id ^ salt, salt) : EncodedBotId.Empty;
   
     public static object EncodeBotRouteId(long? botId, IWebHookSaltProvider? webHookSaltProvider) => new
     {
-      encodedBotId = botId is {} id ? new EncodedBotId(id, webHookSaltProvider?.GetSalt(id) ?? default) : EncodedBotId.Empty
+      encodedBotId = EncodeBotId(botId, webHookSaltProvider)
     };
 
     private static bool DecodeBotId(string? encodedBotId, IWebHookSaltProvider? webHookSaltProvider, out long botId)
     {
       EncodedBotId decodedBotId = encodedBotId;
-      if (decodedBotId != EncodedBotId.Empty)
+      if (decodedBotId != EncodedBotId.Empty && decodedBotId.SubId == (webHookSaltProvider?.GetSalt() ?? default))
       {
-        (botId, var salt) = decodedBotId;
-        return (webHookSaltProvider?.GetSalt(botId) ?? default) == salt;
+        botId = decodedBotId.Id ^ decodedBotId.SubId;
+        return true;
       }
 
       botId = 0;
