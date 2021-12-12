@@ -55,10 +55,17 @@ namespace Team23.TelegramSkeleton
     {
       var status = new Dictionary<string, object>
       {
-        { "bots", await Task.WhenAll(myBots.Select(async bot => new
+        { "bots", await Task.WhenAll(myBots.Select(async bot =>
           {
-            bot = await bot.GetMeAsync(cancellationToken),
-            hook = await bot.GetWebhookInfoAsync(cancellationToken)
+            var botInfo = await bot.GetMeAsync(cancellationToken);
+            var webhookInfo = await bot.GetWebhookInfoAsync(cancellationToken);
+            webhookInfo.Url = webhookInfo.Url.Replace(TelegramController.EncodeBotId(bot.BotId, myWebHookSaltProvider), "XXX");
+            
+            return new
+            {
+              bot = botInfo,
+              hook = webhookInfo
+            };
           }))
         },
         { "Framework", System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription },
@@ -82,7 +89,7 @@ namespace Team23.TelegramSkeleton
 
       foreach (var bot in myBots)
       {
-        var webHookUrl = Url.Action("Update", "Telegram", TelegramController.EncodeBotId(bot.BotId, myWebHookSaltProvider), protocol: "https");
+        var webHookUrl = Url.Action("Update", "Telegram", TelegramController.EncodeBotRouteId(bot.BotId, myWebHookSaltProvider), protocol: "https");
       
         await bot.SetWebhookAsync(webHookUrl!, cancellationToken: cancellationToken);
 

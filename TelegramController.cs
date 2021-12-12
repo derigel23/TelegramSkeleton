@@ -30,7 +30,10 @@ namespace Team23.TelegramSkeleton
       myUpdateHandlers = updateHandlers;
     }
 
-    public static object EncodeBotId(long? botId, IWebHookSaltProvider? webHookSaltProvider) => new
+    public static string EncodeBotId(long? botId, IWebHookSaltProvider? webHookSaltProvider) =>
+      botId is { } id ? new EncodedBotId(id, webHookSaltProvider?.GetSalt(id) ?? default) : EncodedBotId.Empty;
+  
+    public static object EncodeBotRouteId(long? botId, IWebHookSaltProvider? webHookSaltProvider) => new
     {
       encodedBotId = botId is {} id ? new EncodedBotId(id, webHookSaltProvider?.GetSalt(id) ?? default) : EncodedBotId.Empty
     };
