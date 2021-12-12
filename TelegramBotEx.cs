@@ -13,7 +13,7 @@ namespace Team23.TelegramSkeleton
     public static async Task EditMessageReplyMarkupAsync(
       this ITelegramBotClient botClient,
       CallbackQuery callbackQuery,
-      InlineKeyboardMarkup replyMarkup = default,
+      InlineKeyboardMarkup? replyMarkup = default,
       CancellationToken cancellationToken = default
     )
     {
@@ -24,7 +24,7 @@ namespace Team23.TelegramSkeleton
           break;
         
         case { Message: { } message }:
-          await botClient.EditMessageReplyMarkupAsync(message.Chat, message.MessageId, replyMarkup, cancellationToken).ConfigureAwait(false);
+          await botClient.EditMessageReplyMarkupAsync(message.Chat!, message.MessageId, replyMarkup, cancellationToken).ConfigureAwait(false);
           break;
         
         default:
@@ -32,43 +32,36 @@ namespace Team23.TelegramSkeleton
       }
     }
 
-    public static async Task<Message> SendTextMessageAsync(
-      this ITelegramBotClient botClient,
-      ChatId chatId,
-      InputTextMessageContent content,
-      bool? disableNotification = default,
-      int? replyToMessageId = default,
-      bool? allowSendingWithoutReply = default,
-      IReplyMarkup replyMarkup = default,
-      CancellationToken cancellationToken = default) =>
-        await botClient.SendTextMessageAsync(chatId, content.MessageText, content.ParseMode, content.Entities, content.DisableWebPagePreview,
-          disableNotification, replyToMessageId, allowSendingWithoutReply, replyMarkup, cancellationToken).ConfigureAwait(false);
+    public static async Task<Message> SendTextMessageAsync(this ITelegramBotClient botClient, ChatId chatId, InputTextMessageContent content, bool? disableNotification = default, int? replyToMessageId = default, bool? allowSendingWithoutReply = default, IReplyMarkup? replyMarkup = default, CancellationToken cancellationToken = default)
+    {
+      if (replyMarkup == null) throw new ArgumentNullException(nameof(replyMarkup));
+      return await botClient.SendTextMessageAsync(chatId, content.MessageText, content.ParseMode, content.Entities, content.DisableWebPagePreview, disableNotification, replyToMessageId, allowSendingWithoutReply, replyMarkup, cancellationToken)
+        .ConfigureAwait(false);
+    }
 
     public static async Task<Message> EditMessageTextAsync(
       this ITelegramBotClient botClient,
       ChatId chatId,
       int messageId,
       InputTextMessageContent content,
-      InlineKeyboardMarkup replyMarkup = default,
+      InlineKeyboardMarkup? replyMarkup = default,
       CancellationToken cancellationToken = default) =>
         await botClient.EditMessageTextAsync(chatId, messageId, content.MessageText, content.ParseMode, content.Entities, content.DisableWebPagePreview,
           replyMarkup, cancellationToken).ConfigureAwait(false);
-    
-    public static async Task EditMessageTextAsync(
-      this ITelegramBotClient botClient,
-      string inlineMessageId,
-      InputTextMessageContent content,
-      InlineKeyboardMarkup replyMarkup = default,
-      CancellationToken cancellationToken = default) =>
-        await botClient.EditMessageTextAsync(inlineMessageId, content.MessageText, content.ParseMode, content.Entities, content.DisableWebPagePreview,
-          replyMarkup, cancellationToken).ConfigureAwait(false);
+
+    public static async Task EditMessageTextAsync(this ITelegramBotClient botClient, string inlineMessageId, InputTextMessageContent content, InlineKeyboardMarkup? replyMarkup = default, CancellationToken cancellationToken = default)
+    {
+      if (replyMarkup == null) throw new ArgumentNullException(nameof(replyMarkup));
+      if (replyMarkup == null) throw new ArgumentNullException(nameof(replyMarkup));
+      await botClient.EditMessageTextAsync(inlineMessageId, content.MessageText, content.ParseMode, content.Entities, content.DisableWebPagePreview, replyMarkup, cancellationToken).ConfigureAwait(false);
+    }
 
 
     public static async Task EditMessageTextAsync(
       this ITelegramBotClient botClient,
       CallbackQuery callbackQuery,
       InputTextMessageContent content,
-      InlineKeyboardMarkup replyMarkup = default,
+      InlineKeyboardMarkup? replyMarkup = default,
       CancellationToken cancellationToken = default
     )
     {
@@ -79,7 +72,7 @@ namespace Team23.TelegramSkeleton
           break;
         
         case { Message: { } message }:
-          await botClient.EditMessageTextAsync(message.Chat, message.MessageId, content, replyMarkup, cancellationToken).ConfigureAwait(false);
+          await botClient.EditMessageTextAsync(message.Chat!, message.MessageId, content, replyMarkup, cancellationToken).ConfigureAwait(false);
           break;
         
         default:

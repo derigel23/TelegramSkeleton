@@ -13,9 +13,9 @@ namespace Team23.TelegramSkeleton
   [BaseTypeRequired(typeof(IInlineQueryHandler))]
   public class InlineQueryHandlerAttribute : Attribute, IHandlerAttribute<InlineQuery, object>
   {
-    public string QueryPattern { get; set; }
+    public string? QueryPattern { get; set; }
 
-    public bool ShouldProcess(InlineQuery inlineQuery, object context)
+    public bool ShouldProcess(InlineQuery inlineQuery, object? context)
     {
       return string.IsNullOrEmpty(QueryPattern) || Regex.IsMatch(inlineQuery.Query, QueryPattern);
     }

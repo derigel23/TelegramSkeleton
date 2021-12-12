@@ -13,9 +13,9 @@ namespace Team23.TelegramSkeleton
       IReadOnlyCollection<InlineQueryResult> results,
       int? cacheTime = null,
       bool isPersonal = false,
-      string nextOffset = null,
-      string switchPmText = null,
-      string switchPmParameter = null,
+      string? nextOffset = null,
+      string? switchPmText = null,
+      string? switchPmParameter = null,
       CancellationToken cancellationToken = default);
   }
 }

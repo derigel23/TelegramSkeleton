@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Data;
-using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,13 +13,13 @@ namespace Team23.TelegramSkeleton
   {
     private readonly TelemetryClient myTelemetryClient;
     
-    public TelegramBotClientEx(TelemetryClient telemetryClient, string token, HttpClient httpClient = null) : base(token, httpClient)
+    public TelegramBotClientEx(TelemetryClient telemetryClient, string token, HttpClient? httpClient = null) : base(token, httpClient)
     {
       myTelemetryClient = telemetryClient;
     }
 
     public async Task AnswerInlineQueryWithValidationAsync(string inlineQueryId, IReadOnlyCollection<InlineQueryResult> results, int? cacheTime = null,
-      bool isPersonal = false, string nextOffset = null, string switchPmText = null, string switchPmParameter = null,
+      bool isPersonal = false, string? nextOffset = null, string? switchPmText = null, string? switchPmParameter = null,
       CancellationToken cancellationToken = default)
     {
       ISet<string> processedIds = new HashSet<string>();
@@ -29,7 +28,7 @@ namespace Team23.TelegramSkeleton
         if (!processedIds.Add(result.Id))
         {
           myTelemetryClient.TrackException(
-            new DuplicateNameException(result.Id), new Dictionary<string, string> { { nameof(ITelegramBotClient.BotId), BotId.ToString() } });
+            new DuplicateNameException(result.Id), new Dictionary<string, string?> { { nameof(ITelegramBotClient.BotId), BotId.ToString() } });
         }
       }
       await this.AnswerInlineQueryAsync(inlineQueryId, results, cacheTime, isPersonal, nextOffset, switchPmText, switchPmParameter, cancellationToken)

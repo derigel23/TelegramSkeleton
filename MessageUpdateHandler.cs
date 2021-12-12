@@ -10,8 +10,8 @@ namespace Team23.TelegramSkeleton
 {
   [UpdateHandler(UpdateTypes = new[] { UpdateType.Message, UpdateType.EditedMessage, UpdateType.ChannelPost, UpdateType.EditedChannelPost })]
   public abstract class MessageUpdateHandler<TMessageHandler, TMessageContext, TMessageResult, TMessageMetadata> : IUpdateHandler
-    where TMessageHandler :IMessageHandler<TMessageContext, TMessageResult>
-    where TMessageMetadata : Attribute, IHandlerAttribute<Message, (UpdateType, TMessageContext)>
+    where TMessageHandler : IMessageHandler<TMessageContext?, TMessageResult>
+    where TMessageMetadata : Attribute, IHandlerAttribute<Message, (UpdateType, TMessageContext?)>
   {
     private readonly IEnumerable<Lazy<Func<Message, TMessageHandler>, TMessageMetadata>> myMessageHandlers;
 
@@ -20,43 +20,37 @@ namespace Team23.TelegramSkeleton
       myMessageHandlers = messageHandlers;
     }
     
-    public async Task<bool?> Handle(Update update, OperationTelemetry telemetry, CancellationToken cancellationToken = default)
+    public async Task<bool?> Handle(Update update, OperationTelemetry? telemetry, CancellationToken cancellationToken = default)
     {
-      Message message;
       var updateType = update.Type;
-      switch (updateType)
+      var message = updateType switch
       {
-        case UpdateType.Message:
-          message = update.Message;
-          break;
-        case UpdateType.EditedMessage:
-          message = update.EditedMessage;
-          break;
-        case UpdateType.ChannelPost:
-          message = update.ChannelPost;
-          break;
-        case UpdateType.EditedChannelPost:
-          message = update.EditedChannelPost;
-          break;
-        
-        default:
-          throw new ArgumentOutOfRangeException($"Not supported update type: {update.Type} ");
-      }
+        UpdateType.Message => update.Message,
+        UpdateType.EditedMessage => update.EditedMessage,
+        UpdateType.ChannelPost => update.ChannelPost,
+        UpdateType.EditedChannelPost => update.EditedChannelPost,
+        _ => throw new ArgumentOutOfRangeException($"Not supported update type: {update.Type} ")
+      };
 
-      telemetry.Context.User.AccountId = (message.From?.Id ?? message.ForwardFrom?.Id)?.ToString();
-      telemetry.Context.User.AuthenticatedUserId = message.From?.Id.ToString() ?? message.ForwardFrom?.Id.ToString();
-      telemetry.Properties["uid"] = message.From?.Id.ToString() ?? message.ForwardFrom?.Id.ToString();
-      telemetry.Properties["username"] = message.From?.Username ?? message.ForwardFrom?.Username;
-      telemetry.Properties["messageType"] = message.Type.ToString();
-      telemetry.Properties["chat"] = message.Chat.Username;
-      telemetry.Properties["cid"] = message.Chat.Id.ToString();
-      telemetry.Properties["mid"] = message.MessageId.ToString();
+      if (message == null) return default;
+
+      if (telemetry != null)
+      {
+        telemetry.Context.User.AccountId = (message.From?.Id ?? message.ForwardFrom?.Id)?.ToString();
+        telemetry.Context.User.AuthenticatedUserId = message.From?.Id.ToString() ?? message.ForwardFrom?.Id.ToString();
+        telemetry.Properties["uid"] = message.From?.Id.ToString() ?? message.ForwardFrom?.Id.ToString();
+        telemetry.Properties["username"] = message.From?.Username ?? message.ForwardFrom?.Username;
+        telemetry.Properties["messageType"] = message.Type.ToString();
+        telemetry.Properties["chat"] = message.Chat.Username;
+        telemetry.Properties["cid"] = message.Chat.Id.ToString();
+        telemetry.Properties["mid"] = message.MessageId.ToString();
+      }
 
       var result = await ProcessMessage(async (msg, context, properties, ct) =>
       {
         foreach (var property in properties)
         {
-          telemetry.Properties.Add(property);
+          telemetry?.Properties.Add(property);
         }
 
         return await HandlerExtensions<TMessageResult>.Handle(myMessageHandlers.Bind(message), message, (updateType, context), ct).ConfigureAwait(false);
@@ -68,9 +62,9 @@ namespace Team23.TelegramSkeleton
       return default;
     }
     
-    protected virtual TMessageContext GetMessageContext(Message message) => default;
+    protected virtual TMessageContext? GetMessageContext(Message message) => default;
 
-    protected virtual Task<TMessageResult> ProcessMessage(Func<Message, TMessageContext, IDictionary<string, string>, CancellationToken, Task<TMessageResult>> processor,
+    protected virtual Task<TMessageResult?> ProcessMessage(Func<Message, TMessageContext?, IDictionary<string, string>, CancellationToken, Task<TMessageResult?>> processor,
       Message message,  CancellationToken cancellationToken = default)
     {
       return processor(message, GetMessageContext(message), new Dictionary<string, string>(0), cancellationToken);

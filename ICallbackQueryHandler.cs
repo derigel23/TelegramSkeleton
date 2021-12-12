@@ -2,7 +2,7 @@
 
 namespace Team23.TelegramSkeleton
 {
-  public interface ICallbackQueryHandler<in TContext> : IHandler<CallbackQuery, TContext, (string text, bool showAlert, string url)>
+  public interface ICallbackQueryHandler<in TContext> : IHandler<CallbackQuery, TContext, (string? text, bool showAlert, string? url)>
   {
     
   }

@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using JetBrains.Annotations;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -11,7 +10,7 @@ namespace Team23.TelegramSkeleton
   {
     public BotCommandScope[] Scopes { get; set; }      
     public BotCommand Command { get; set; }      
-    [CanBeNull] public string[] Aliases { get; set; }
+    public string[]? Aliases { get; set; }
   }
 
   public static class BotCommandHandler
@@ -36,7 +35,7 @@ namespace Team23.TelegramSkeleton
       };
     }
 
-    public static bool ShouldProcess<TContext, TResult>(this IBotCommandHandler<TContext, TResult> handler, MessageEntityEx entity, TContext context, Predicate<MessageEntityEx> alternativeCheck = default)
+    public static bool ShouldProcess<TContext, TResult>(this IBotCommandHandler<TContext, TResult> handler, MessageEntityEx entity, TContext context, Predicate<MessageEntityEx>? alternativeCheck = default)
     {
       foreach (var metadata in handler.GetType().GetCustomAttributes().OfType<IBotCommandHandlerAttribute<TContext>>())
       {
@@ -47,7 +46,7 @@ namespace Team23.TelegramSkeleton
       return true;
     }
 
-    public static bool ShouldProcess<TContext>(IBotCommandHandlerAttribute<TContext> attribute, MessageEntityEx entity, TContext context, Predicate<MessageEntityEx> alternativeCheck = default)
+    public static bool ShouldProcess<TContext>(IBotCommandHandlerAttribute<TContext> attribute, MessageEntityEx entity, TContext context, Predicate<MessageEntityEx>? alternativeCheck = default)
     {
       if (entity.Type != MessageEntityType.BotCommand)
         return false;

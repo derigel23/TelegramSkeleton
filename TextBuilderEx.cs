@@ -13,14 +13,14 @@ public static class TextBuilderEx
   public static readonly string NewLineString = "\n";
 
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static TextBuilder NewLine([NotNull] this TextBuilder builder)
+  public static TextBuilder NewLine(this TextBuilder builder)
   {
     ((StringBuilder)builder).Append(NewLineString);
     return builder;
   }
 
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static TextBuilder Append([NotNull] this TextBuilder builder, [CanBeNull] string text = null)
+  public static TextBuilder Append(this TextBuilder builder, string? text = null)
   {
     ((StringBuilder)builder).Append(text);
     return builder;
@@ -28,14 +28,14 @@ public static class TextBuilderEx
 
   // TODO: check and remove
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static TextBuilder Sanitize([NotNull] this TextBuilder builder, [CanBeNull] string text = null)
+  public static TextBuilder Sanitize(this TextBuilder builder, string? text = null)
   {
     ((StringBuilder)builder).Append(text);
     return builder;
   }
 
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static TextBuilder SanitizeNickname([NotNull] this TextBuilder builder, [CanBeNull] string text = null)
+  public static TextBuilder SanitizeNickname(this TextBuilder builder, string? text = null)
   {
     if (string.IsNullOrEmpty(text)) return builder;
     StringBuilder sb = builder;
@@ -52,7 +52,7 @@ public static class TextBuilderEx
     builder.Entity(MessageEntityType.Bold);
 
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static TextBuilder Bold([NotNull] this TextBuilder builder, [NotNull, InstantHandle] Action<TextBuilder> action)
+  public static TextBuilder Bold(this TextBuilder builder, [InstantHandle] Action<TextBuilder> action)
   {
     using (builder.Bold())
     {
@@ -62,7 +62,7 @@ public static class TextBuilderEx
   }
 
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static TextBuilder Bold([NotNull] this TextBuilder builder, [NotNull, InstantHandle] Action<StringBuilder> action)
+  public static TextBuilder Bold(this TextBuilder builder, [InstantHandle] Action<StringBuilder> action)
   {
     using (builder.Bold())
     {
@@ -72,7 +72,7 @@ public static class TextBuilderEx
   }
   
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static TextBuilder Bold([NotNull] this TextBuilder builder, [CanBeNull] string text) =>
+  public static TextBuilder Bold(this TextBuilder builder, string? text) =>
     builder.Bold((StringBuilder b) => b.Append(text));
 
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -80,7 +80,7 @@ public static class TextBuilderEx
     builder.Entity(MessageEntityType.Italic);
 
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static TextBuilder Italic([NotNull] this TextBuilder builder, [NotNull, InstantHandle] Action<TextBuilder> action)
+  public static TextBuilder Italic(this TextBuilder builder, [InstantHandle] Action<TextBuilder> action)
   {
     using (builder.Italic())
     {
@@ -90,7 +90,7 @@ public static class TextBuilderEx
   }
 
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static TextBuilder Italic([NotNull] this TextBuilder builder, [NotNull, InstantHandle] Action<StringBuilder> action)
+  public static TextBuilder Italic(this TextBuilder builder, [InstantHandle] Action<StringBuilder> action)
   {
     using (builder.Italic())
     {
@@ -100,7 +100,7 @@ public static class TextBuilderEx
   }
   
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static TextBuilder Italic([NotNull] this TextBuilder builder, [CanBeNull] string text) =>
+  public static TextBuilder Italic(this TextBuilder builder, string? text) =>
     builder.Italic((StringBuilder b) => b.Append(text));
 
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -108,7 +108,7 @@ public static class TextBuilderEx
     builder.Entity(MessageEntityType.Code);
 
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static TextBuilder Code([NotNull] this TextBuilder builder, [NotNull, InstantHandle] Action<TextBuilder> action)
+  public static TextBuilder Code(this TextBuilder builder, [InstantHandle] Action<TextBuilder> action)
   {
     using (builder.Code())
     {
@@ -118,7 +118,7 @@ public static class TextBuilderEx
   }
 
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static TextBuilder Code([NotNull] this TextBuilder builder, [NotNull, InstantHandle] Action<StringBuilder> action)
+  public static TextBuilder Code(this TextBuilder builder, [InstantHandle] Action<StringBuilder> action)
   {
     using (builder.Code())
     {
@@ -128,11 +128,11 @@ public static class TextBuilderEx
   }
 
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static TextBuilder Code([NotNull] this TextBuilder builder, [CanBeNull] string text) =>
+  public static TextBuilder Code(this TextBuilder builder, string? text) =>
     builder.Code((StringBuilder b) => b.Append(text));
 
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static TextBuilder Link([NotNull] this TextBuilder builder, [NotNull] Action<TextBuilder> action, [CanBeNull] string link)
+  public static TextBuilder Link(this TextBuilder builder, Action<TextBuilder> action, string? link)
   {
     using (string.IsNullOrEmpty(link) ? new Disposable() : builder.Entity(new MessageEntity { Type = MessageEntityType.TextLink, Url = link }))
     {
@@ -142,11 +142,11 @@ public static class TextBuilderEx
   }
   
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static TextBuilder Link([NotNull] this TextBuilder builder, [NotNull] string text, [CanBeNull] string link) =>
+  public static TextBuilder Link(this TextBuilder builder, string text, string? link) =>
     builder.Link(sb => sb.Append(text), link);
   
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static TextBuilder Link([NotNull] this TextBuilder builder, [NotNull] Action<TextBuilder> action, [CanBeNull] User user)
+  public static TextBuilder Link(this TextBuilder builder, Action<TextBuilder> action, User? user)
   {
     using (user == null ? new Disposable() : builder.Entity(new MessageEntity { Type = MessageEntityType.TextMention, User = user }))
     {

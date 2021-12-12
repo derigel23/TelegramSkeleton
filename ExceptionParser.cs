@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 
@@ -26,13 +25,13 @@ namespace Team23.TelegramSkeleton
   
   public class ApiRequestTimeoutException : ApiRequestException
   {
-    public ApiRequestTimeoutException([NotNull] string message, int errorCode, ResponseParameters parameters = null) 
+    public ApiRequestTimeoutException(string message, int errorCode, ResponseParameters? parameters = null) 
       : base(message, errorCode, parameters) { }
   }
 
   public class ApiRequestNotFoundException : ApiRequestException
   {
-    public ApiRequestNotFoundException([NotNull] string message, int errorCode, ResponseParameters parameters = null) 
+    public ApiRequestNotFoundException(string message, int errorCode, ResponseParameters? parameters = null) 
       : base(message, errorCode, parameters) { }
   }
 }

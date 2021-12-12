@@ -21,11 +21,11 @@ namespace Team23.TelegramSkeleton
       set => UpdateTypes = new[] {value};
     }
 
-    public UpdateType[] UpdateTypes { get; set; }
+    public UpdateType[]? UpdateTypes { get; set; }
 
-    public bool ShouldProcess(Update update, OperationTelemetry telemetry)
+    public bool ShouldProcess(Update update, OperationTelemetry? telemetry)
     {
-      return UpdateTypes.Contains(update.Type);
+      return UpdateTypes?.Contains(update.Type) ?? false;
     }
 
     public int Order => 0;

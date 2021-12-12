@@ -22,15 +22,21 @@ namespace Team23.TelegramSkeleton
       myCallbackQueryHandlers = callbackQueryHandlers;
     }
     
-    public async Task<bool?> Handle(Update update, OperationTelemetry telemetry, CancellationToken cancellationToken = default)
+    public async Task<bool?> Handle(Update update, OperationTelemetry? telemetry, CancellationToken cancellationToken = default)
     {
-      var callbackQuery = update.CallbackQuery;
-      telemetry.Properties["uid"] = callbackQuery.From?.Id.ToString();
-      telemetry.Properties["username"] = callbackQuery.From?.Username;
-      telemetry.Properties["data"] = callbackQuery.Data;
+      if (update.CallbackQuery is not { } callbackQuery)
+        return default;
+
+      if (telemetry is not null)
+      {
+        telemetry.Properties["uid"] = callbackQuery.From.Id.ToString();
+        telemetry.Properties["username"] = callbackQuery.From.Username;
+        telemetry.Properties["data"] = callbackQuery.Data;
+      }
+
       try
       {
-        (var text, var showAlert, string url) = await HandlerExtensions<(string, bool, string)>.Handle(myCallbackQueryHandlers.Bind(update), callbackQuery, GetContext(update), cancellationToken).ConfigureAwait(false);
+        var (text, showAlert, url) = await HandlerExtensions<(string?, bool, string?)>.Handle(myCallbackQueryHandlers.Bind(update), callbackQuery, GetContext(update), cancellationToken).ConfigureAwait(false);
         await myTelegramBotClient.AnswerCallbackQueryAsync(callbackQuery.Id, text, showAlert, url, cancellationToken: cancellationToken);
       }
       catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
@@ -42,6 +48,6 @@ namespace Team23.TelegramSkeleton
       return true;
     }
 
-    public virtual TContext GetContext(Update update) => default;
+    public virtual TContext? GetContext(Update update) => default;
   }
 }

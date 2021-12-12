@@ -21,7 +21,7 @@ namespace Team23.TelegramSkeleton
 
   public static class HandlerExtensions<TResult>
   {
-    public static async Task<TResult> Handle<TData, TContext>(IEnumerable<IHandler<TData, TContext, TResult>> handlers, TData data, TContext context = default, CancellationToken cancellationToken = default)
+    public static async Task<TResult?> Handle<TData, TContext>(IEnumerable<IHandler<TData, TContext, TResult>> handlers, TData data, TContext? context = default, CancellationToken cancellationToken = default)
     {
       foreach (var handler in handlers)
       {
@@ -33,7 +33,7 @@ namespace Team23.TelegramSkeleton
       return default;
     }
 
-    public static async Task<TResult> Handle<THandler, TData, TContext, TMetadata>(IEnumerable<Lazy<Func<THandler>, TMetadata>> handlers, TData data, TContext context = default, CancellationToken cancellationToken = default)
+    public static async Task<TResult?> Handle<THandler, TData, TContext, TMetadata>(IEnumerable<Lazy<Func<THandler>, TMetadata>> handlers, TData data, TContext? context = default, CancellationToken cancellationToken = default)
       where THandler : IHandler<TData, TContext, TResult>
       where TMetadata : Attribute, IHandlerAttribute<TData, TContext>
     {
