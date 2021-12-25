@@ -60,8 +60,8 @@ public class TextBuilder
   public IDisposable Entity(MessageEntity entity) =>
     new EntityAction(entity, this);
 
-  public IDisposable Entity(MessageEntityType entityType) =>
-    new EntityAction(new MessageEntity { Type = entityType }, this);
+  public IDisposable Entity(MessageEntityType entityType, int? length = null) =>
+    new EntityAction(new MessageEntity { Type = entityType, Length = length ?? 0 }, this);
 
   public InputTextMessageContent ToTextMessageContent(bool? disableWebPreview = default) =>
     new (myStringBuilder.ToString())
@@ -86,7 +86,11 @@ public class TextBuilder
     
     public void Dispose()
     {
-      myEntity.Length = myBuilder.myStringBuilder.Length - myEntity.Offset;
+      // set entity length only if not predefined in ctor
+      if (myEntity.Length == 0)
+      {
+        myEntity.Length = myBuilder.myStringBuilder.Length - myEntity.Offset;
+      }
       if (myEntity.Length < 0)
         throw new InvalidEnumArgumentException("Negative length");
     }

@@ -8,7 +8,7 @@ using Telegram.Bot.Types.Enums;
 
 namespace Team23.TelegramSkeleton;
 
-public static class TextBuilderEx
+public static partial class TextBuilderEx
 {
   public static readonly string NewLineString = "\n";
 
@@ -18,14 +18,7 @@ public static class TextBuilderEx
     ((StringBuilder)builder).Append(NewLineString);
     return builder;
   }
-
-  [MethodImpl(MethodImplOptions.AggressiveInlining)]
-  public static TextBuilder Append(this TextBuilder builder, string? text = null)
-  {
-    ((StringBuilder)builder).Append(text);
-    return builder;
-  }
-
+  
   // TODO: check and remove
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
   public static TextBuilder Sanitize(this TextBuilder builder, string? text = null)
@@ -73,7 +66,7 @@ public static class TextBuilderEx
   
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
   public static TextBuilder Bold(this TextBuilder builder, string? text) =>
-    builder.Bold((StringBuilder b) => b.Append(text));
+    builder.Bold(b => b.Append(text));
 
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
   public static IDisposable Italic(this TextBuilder builder) =>
@@ -101,7 +94,7 @@ public static class TextBuilderEx
   
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
   public static TextBuilder Italic(this TextBuilder builder, string? text) =>
-    builder.Italic((StringBuilder b) => b.Append(text));
+    builder.Italic(b => b.Append(text));
 
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
   public static IDisposable Code(this TextBuilder builder) =>
@@ -129,12 +122,12 @@ public static class TextBuilderEx
 
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
   public static TextBuilder Code(this TextBuilder builder, string? text) =>
-    builder.Code((StringBuilder b) => b.Append(text));
+    builder.Code(b => b.Append(text));
 
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
   public static TextBuilder Link(this TextBuilder builder, Action<TextBuilder> action, string? link)
   {
-    using (string.IsNullOrEmpty(link) ? new Disposable() : builder.Entity(new MessageEntity { Type = MessageEntityType.TextLink, Url = link }))
+    using (string.IsNullOrEmpty(link) ? null : builder.Entity(new MessageEntity { Type = MessageEntityType.TextLink, Url = link }))
     {
       action(builder);
       return builder;
@@ -143,7 +136,7 @@ public static class TextBuilderEx
   
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
   public static TextBuilder Link(this TextBuilder builder, string text, string? link) =>
-    builder.Link(sb => sb.Append(text), link);
+    builder.Link(sb => ((StringBuilder)sb).Append(text), link);
   
   [MethodImpl(MethodImplOptions.AggressiveInlining)]
   public static TextBuilder Link(this TextBuilder builder, Action<TextBuilder> action, User? user)

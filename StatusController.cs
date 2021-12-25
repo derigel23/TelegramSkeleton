@@ -91,7 +91,7 @@ namespace Team23.TelegramSkeleton
       {
         var webHookUrl = Url.Action("Update", "Telegram", TelegramController.EncodeBotRouteId(bot.BotId, myWebHookSaltProvider), protocol: "https");
       
-        await bot.SetWebhookAsync(webHookUrl!, cancellationToken: cancellationToken);
+        await bot.SetWebhookAsync(webHookUrl!, dropPendingUpdates: true, cancellationToken: cancellationToken);
 
         foreach (var group in botCommands)
         {
