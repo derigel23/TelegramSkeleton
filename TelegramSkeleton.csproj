@@ -17,7 +17,7 @@
     <ItemGroup>
       <PackageReference Include="Autofac" Version="6.3.0" />
       <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
-      <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.19.0" />
+      <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.20.0" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.0" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.0">
         <PrivateAssets>all</PrivateAssets>
