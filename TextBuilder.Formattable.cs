@@ -24,7 +24,7 @@ public static partial class TextBuilderEx
     string ICustomFormatter.Format(string? format, object? arg, IFormatProvider? formatProvider)
     {
       string result;
-      if (arg is IFormattable formattable)
+      if (arg is IFormattable formattable && format != null)
       {
         result = formattable.ToString(format, formatProvider);
       }
