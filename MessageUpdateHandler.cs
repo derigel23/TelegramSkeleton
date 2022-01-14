@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
@@ -44,6 +45,10 @@ namespace Team23.TelegramSkeleton
         telemetry.Properties["chat"] = message.Chat.Username;
         telemetry.Properties["cid"] = message.Chat.Id.ToString();
         telemetry.Properties["mid"] = message.MessageId.ToString();
+        telemetry.Properties["command"] = message.Entities?
+          .Where(entity => entity.Type == MessageEntityType.BotCommand)
+          .Select(entity => message.Text?.Substring(entity.Offset, entity.Length))
+          .FirstOrDefault();
       }
 
       var result = await ProcessMessage(async (msg, context, properties, ct) =>
