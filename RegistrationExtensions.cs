@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Polly;
+using Polly.RateLimit;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 
@@ -89,19 +90,37 @@ namespace Team23.TelegramSkeleton
       services.AddSingleton<CachedPolicyRegistry>();
       services
         .AddHttpClient(nameof(TTelegramBotClient))
-        .AddPolicyHandler((provider, _) =>
+        .AddPolicyHandler((provider, message) =>
         {
           var policyRegistry = provider.GetRequiredService<CachedPolicyRegistry>();
-          return policyRegistry.GetOrAdd("RetryPolicy", _ => Policy
+          
+          // retry policy
+          IAsyncPolicy<HttpResponseMessage> policy = policyRegistry.GetOrAdd("RetryPolicy", _ => Policy
             .HandleResult<HttpResponseMessage>(response => response.StatusCode == HttpStatusCode.TooManyRequests)
+            .Or<RateLimitRejectedException>()
             .WaitAndRetryAsync(3, (_, result, _) =>
-            {
-              var body = result.Result.Content.ReadAsStringAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+              {
+                if (result.Exception is RateLimitRejectedException rateLimitRejectedException)
+                {
+                  return rateLimitRejectedException.RetryAfter;
+                }
+              
+                var body = result.Result.Content.ReadAsStringAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 
-              var apiResponse = JsonConvert.DeserializeObject<ApiResponse>(body);
-              return TimeSpan.FromSeconds(apiResponse.Parameters?.RetryAfter ?? 23);
-            },
-            (_, _, _, _) => Task.CompletedTask));
+                var apiResponse = JsonConvert.DeserializeObject<ApiResponse>(body);
+                return TimeSpan.FromSeconds(apiResponse.Parameters?.RetryAfter ?? 23);
+              },
+              (_, _, _, _) => Task.CompletedTask));
+
+          // rate-limit policy
+          // https://core.telegram.org/bots/faq#my-bot-is-hitting-limits-how-do-i-avoid-this
+          if (message.RequestUri?.Segments.LastOrDefault() is "sendMessage")
+          {
+            policy = policy.WrapAsync(policyRegistry.GetOrAdd("GlobalLimitPolicy", _ =>
+              Policy.RateLimitAsync<HttpResponseMessage>(30, TimeSpan.FromSeconds(1))));
+          }
+
+          return policy;
         })
         .AddTypedClient(BotCollectionFactory<ITelegramBotClient>)
         .AddTypedClient(BotCollectionFactory<ITelegramBotClientEx>)
