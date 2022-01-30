@@ -8,10 +8,8 @@ using System.Threading.Tasks;
 using Autofac;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Polly;
-using Polly.Retry;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 
@@ -88,28 +86,22 @@ namespace Team23.TelegramSkeleton
         return default;
       }
 
-      AsyncRetryPolicy<HttpResponseMessage> GetRetryPolicy(ILogger logger) => Policy
-        .HandleResult<HttpResponseMessage>(response => response.StatusCode == HttpStatusCode.TooManyRequests)
-        .WaitAndRetryAsync(3, (_, result, _) =>
-        {
-          var body = result.Result.Content.ReadAsStringAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-
-          var apiResponse = JsonConvert.DeserializeObject<ApiResponse>(body);
-          return TimeSpan.FromSeconds(apiResponse.Parameters?.RetryAfter ?? 23);
-        },
-        (result, span, retry, _) =>
-        {
-          logger.LogWarning(result.Exception, "Retry #{Retry} with timeout {Timeout}", retry, span);
-          return Task.CompletedTask;
-        });
-      
+      services.AddSingleton<CachedPolicyRegistry>();
       services
         .AddHttpClient(nameof(TTelegramBotClient))
         .AddPolicyHandler((provider, _) =>
         {
-          var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
-          var logger = loggerFactory.CreateLogger(typeof(TTelegramBotClient));
-          return GetRetryPolicy(logger);
+          var policyRegistry = provider.GetRequiredService<CachedPolicyRegistry>();
+          return policyRegistry.GetOrAdd("RetryPolicy", _ => Policy
+            .HandleResult<HttpResponseMessage>(response => response.StatusCode == HttpStatusCode.TooManyRequests)
+            .WaitAndRetryAsync(3, (_, result, _) =>
+            {
+              var body = result.Result.Content.ReadAsStringAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+
+              var apiResponse = JsonConvert.DeserializeObject<ApiResponse>(body);
+              return TimeSpan.FromSeconds(apiResponse.Parameters?.RetryAfter ?? 23);
+            },
+            (_, _, _, _) => Task.CompletedTask));
         })
         .AddTypedClient(BotCollectionFactory<ITelegramBotClient>)
         .AddTypedClient(BotCollectionFactory<ITelegramBotClientEx>)
