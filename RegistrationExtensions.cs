@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -12,7 +13,9 @@ using Newtonsoft.Json;
 using Polly;
 using Polly.RateLimit;
 using Telegram.Bot;
+using Telegram.Bot.Args;
 using Telegram.Bot.Exceptions;
+using Telegram.Bot.Requests.Abstractions;
 
 namespace Team23.TelegramSkeleton
 {
@@ -60,6 +63,7 @@ namespace Team23.TelegramSkeleton
             if (retriever?.Invoke(client, token) is T { BotId: {} botId } bot)
             {
               bot.ExceptionsParser = ExceptionParser.Instance;
+              bot.OnMakingApiRequest += BotOnOnMakingApiRequest;
               result[botId] = bot;
             }
           }
@@ -93,9 +97,10 @@ namespace Team23.TelegramSkeleton
         .AddPolicyHandler((provider, message) =>
         {
           var policyRegistry = provider.GetRequiredService<CachedPolicyRegistry>();
+          IAsyncPolicy<HttpResponseMessage> policy = Policy.NoOpAsync<HttpResponseMessage>();
           
           // retry policy
-          IAsyncPolicy<HttpResponseMessage> policy = policyRegistry.GetOrAdd("RetryPolicy", _ => Policy
+          policy = policy.WrapAsync(policyRegistry.GetOrAdd("RetryPolicy", _ => Policy
             .HandleResult<HttpResponseMessage>(response => response.StatusCode == HttpStatusCode.TooManyRequests)
             .Or<RateLimitRejectedException>()
             .WaitAndRetryAsync(3, (_, result, _) =>
@@ -108,18 +113,32 @@ namespace Team23.TelegramSkeleton
                 var body = result.Result.Content.ReadAsStringAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 
                 var apiResponse = JsonConvert.DeserializeObject<ApiResponse>(body);
-                return TimeSpan.FromSeconds(apiResponse.Parameters?.RetryAfter ?? 23);
+                return TimeSpan.FromSeconds(apiResponse.Parameters?.RetryAfter ?? 3);
               },
-              (_, _, _, _) => Task.CompletedTask));
+              (_, _, _, _) => Task.CompletedTask)));
 
-          // rate-limit policy
-          // https://core.telegram.org/bots/faq#my-bot-is-hitting-limits-how-do-i-avoid-this
-          if (message.RequestUri?.Segments.LastOrDefault() is "sendMessage")
+          var context = message.GetPolicyExecutionContext();
+          if (context.TryGetValue(REQUEST_ID, out var request) && request is IRequest telegramRequest)
           {
-            policy = policy.WrapAsync(policyRegistry.GetOrAdd("GlobalLimitPolicy", _ =>
-              Policy.RateLimitAsync<HttpResponseMessage>(30, TimeSpan.FromSeconds(1))));
-          }
+            // https://core.telegram.org/bots/faq#my-bot-is-hitting-limits-how-do-i-avoid-this
+            if (telegramRequest.MethodName == "sendMessage")
+            {
+              // general rate-limit policy
+              policy = policy.WrapAsync(policyRegistry.GetOrAdd("GlobalLimitPolicy", _ =>
+                Policy.RateLimitAsync<HttpResponseMessage>(30, TimeSpan.FromSeconds(1))));
 
+              // specific rate-limit policy
+              if (telegramRequest is IChatTargetable { ChatId: var chatId })
+              {
+                policy = policy.WrapAsync(policyRegistry.GetOrAdd($"SpecificLimitPolicyPerMinute{chatId.Identifier}", _ =>
+                  Policy.RateLimitAsync<HttpResponseMessage>(20, TimeSpan.FromMinutes(1))));
+
+                policy = policy.WrapAsync(policyRegistry.GetOrAdd($"SpecificLimitPolicyPerSecond{chatId.Identifier}", _ =>
+                  Policy.RateLimitAsync<HttpResponseMessage>(1, TimeSpan.FromSeconds(1), 2)));
+              }
+            }
+          }
+          
           return policy;
         })
         .AddTypedClient(BotCollectionFactory<ITelegramBotClient>)
@@ -131,6 +150,18 @@ namespace Team23.TelegramSkeleton
         .AddTypedClient(BotFactory<ITelegramBotClient>)
         .AddTypedClient(BotFactory<ITelegramBotClientEx>)
         .AddTypedClient(BotFactory<TITelegramBotClient>);
+    }
+
+    private const string REQUEST_ID = "Telegram.Request";
+    
+    private static ValueTask BotOnOnMakingApiRequest(ITelegramBotClient botClient, ApiRequestEventArgs args, CancellationToken cancellationToken)
+    {
+      var context = new Context
+      {
+        [REQUEST_ID] = args.Request
+      };
+      args.HttpRequestMessage.SetPolicyExecutionContext(context);
+      return ValueTask.CompletedTask;
     }
 
     public static void RegisterTelegramSkeleton<TTelegramBotClient>(this ContainerBuilder builder, Assembly? assembly = null)
