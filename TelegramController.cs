@@ -14,15 +14,15 @@ namespace Team23.TelegramSkeleton
 {
   public class TelegramController : Controller
   {
-    private readonly IWebHookSaltProvider myWebHookSaltProvider;
+    private readonly IWebHookSaltProvider? myWebHookSaltProvider;
     private readonly string myTelemetryTypeName;
     private readonly TelemetryClient myTelemetryClient;
     private readonly IEnumerable<Lazy<Func<Update, IUpdateHandler>, UpdateHandlerAttribute>> myUpdateHandlers;
 
-    public TelegramController(IWebHookSaltProvider webHookSaltProvider, ITelegramBotClient bot, TelemetryClient telemetryClient, IEnumerable<Lazy<Func<Update, IUpdateHandler>, UpdateHandlerAttribute>> updateHandlers)
+    public TelegramController(ITelegramBotClient bot, TelemetryClient telemetryClient, IEnumerable<Lazy<Func<Update, IUpdateHandler>, UpdateHandlerAttribute>> updateHandlers, IWebHookSaltProvider? webHookSaltProvider = null)
       : this(telemetryClient, webHookSaltProvider, updateHandlers, bot.GetType().Name) { }
 
-    protected TelegramController(TelemetryClient telemetryClient, IWebHookSaltProvider webHookSaltProvider, IEnumerable<Lazy<Func<Update, IUpdateHandler>, UpdateHandlerAttribute>> updateHandlers, string? telemetryTypeName)
+    protected TelegramController(TelemetryClient telemetryClient, IWebHookSaltProvider? webHookSaltProvider, IEnumerable<Lazy<Func<Update, IUpdateHandler>, UpdateHandlerAttribute>> updateHandlers, string? telemetryTypeName)
     {
       myWebHookSaltProvider = webHookSaltProvider;
       myTelemetryTypeName = telemetryTypeName ?? GetType().Namespace ?? string.Empty;
