@@ -14,15 +14,15 @@ using Telegram.Bot.Types;
 namespace Team23.TelegramSkeleton
 {
   public abstract class StatusController<TContext, TResult, TCommandHandlerAttribute> : Controller
-    where TCommandHandlerAttribute : Attribute, IBotCommandHandlerAttribute<TContext>
+    where TCommandHandlerAttribute : IBotCommandHandlerAttribute<TContext>
   {
     private readonly IEnumerable<ITelegramBotClient> myBots;
     private readonly IEnumerable<IStatusProvider> myStatusProviders;
 
-    private readonly IEnumerable<Lazy<Func<Message, IBotCommandHandler<TContext, TResult>>, TCommandHandlerAttribute>> myCommandHandlers;
+    private readonly IEnumerable<Lazy<Func<Message, IBotCommandHandler<TContext, TResult>>, TCommandHandlerAttribute>>? myCommandHandlers;
     private readonly IWebHookSaltProvider? myWebHookSaltProvider;
 
-    protected StatusController(IWebHookSaltProvider? webHookSaltProvider, IEnumerable<ITelegramBotClient> bots, IEnumerable<IStatusProvider> statusProviders, IEnumerable<Lazy<Func<Message, IBotCommandHandler<TContext, TResult>>, TCommandHandlerAttribute>> commandHandlers)
+    protected StatusController(IWebHookSaltProvider? webHookSaltProvider, IEnumerable<ITelegramBotClient> bots, IEnumerable<IStatusProvider> statusProviders, IEnumerable<Lazy<Func<Message, IBotCommandHandler<TContext, TResult>>, TCommandHandlerAttribute>>? commandHandlers)
     {
       myWebHookSaltProvider = webHookSaltProvider;
       myBots = bots;
@@ -82,7 +82,7 @@ namespace Team23.TelegramSkeleton
     [HttpGet("/refresh")]
     public async Task<IActionResult> Refresh(CancellationToken cancellationToken)
     {
-      var botCommands = myCommandHandlers
+      var botCommands = myCommandHandlers?
         .SelectMany(handler =>
           handler.Metadata.Scopes.Select(scope => KeyValuePair.Create(scope.Type, handler.Metadata)))
         .ToLookup(pair => pair.Key, pair => pair.Value);
@@ -93,6 +93,8 @@ namespace Team23.TelegramSkeleton
       
         await bot.SetWebhookAsync(webHookUrl!, dropPendingUpdates: true, cancellationToken: cancellationToken);
 
+        if (botCommands == null) continue;
+        
         foreach (var group in botCommands)
         {
           var commands = group
