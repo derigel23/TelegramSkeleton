@@ -80,7 +80,7 @@ namespace Team23.TelegramSkeleton
     }
     
     [HttpGet("/refresh")]
-    public async Task<IActionResult> Refresh(CancellationToken cancellationToken)
+    public virtual async Task<IActionResult> Refresh(CancellationToken cancellationToken)
     {
       var botCommands = myCommandHandlers?
         .SelectMany(handler =>
