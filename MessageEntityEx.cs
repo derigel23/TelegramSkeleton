@@ -15,8 +15,8 @@ namespace Team23.TelegramSkeleton
       Url = messageEntity.Url;
       User = messageEntity.User;
       
-      Value = new StringSegment(Message.Text, Offset, Length);
-      AfterValue = new StringSegment(Message.Text, Offset + Length, Message.Text!.Length - Offset - Length);
+      Value = new StringSegment(Message.Text!, Offset, Length);
+      AfterValue = new StringSegment(Message.Text!, Offset + Length, Message.Text!.Length - Offset - Length);
 
       if (Type == MessageEntityType.BotCommand && Value.IndexOf('@') is var atOffset)
       {

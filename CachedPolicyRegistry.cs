@@ -14,13 +14,13 @@ public class CachedPolicyRegistry : PolicyRegistry
     myMemoryCache = memoryCache;
   }
   
-  public TPolicy GetOrAdd<TPolicy>(string key, Func<string, ICacheEntry, TPolicy> policyFactory) where TPolicy : IsPolicy
+  public TPolicy? GetOrAdd<TPolicy>(string key, Func<string, ICacheEntry, TPolicy> policyFactory) where TPolicy : IsPolicy
   {
     return myMemoryCache.GetOrCreate(key, entry =>
     {
-      entry.RegisterPostEvictionCallback((kkey, value, reason, state) =>
+      entry.RegisterPostEvictionCallback((kkey, value, _, _) =>
       {
-        var a = base.TryRemove((string)kkey, out IsPolicy policy) && policy == value;
+        var a = TryRemove((string)kkey, out IsPolicy policy) && policy == value;
       });
       return policyFactory(key, entry);
     });

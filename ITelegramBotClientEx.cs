@@ -11,11 +11,10 @@ namespace Team23.TelegramSkeleton
     Task AnswerInlineQueryWithValidationAsync(
       string inlineQueryId,
       IReadOnlyCollection<InlineQueryResult> results,
-      int? cacheTime = null,
-      bool isPersonal = false,
-      string? nextOffset = null,
-      string? switchPmText = null,
-      string? switchPmParameter = null,
+      int? cacheTime = default,
+      bool? isPersonal = default,
+      string? nextOffset = default,
+      InlineQueryResultsButton? button = default,
       CancellationToken cancellationToken = default);
   }
 }

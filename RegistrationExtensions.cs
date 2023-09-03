@@ -113,29 +113,26 @@ namespace Team23.TelegramSkeleton
                 var body = result.Result.Content.ReadAsStringAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 
                 var apiResponse = JsonConvert.DeserializeObject<ApiResponse>(body);
-                return TimeSpan.FromSeconds(apiResponse.Parameters?.RetryAfter ?? 3);
+                return TimeSpan.FromSeconds(apiResponse?.Parameters?.RetryAfter ?? 3);
               },
               (_, _, _, _) => Task.CompletedTask)));
 
           var context = message.GetPolicyExecutionContext();
-          if (context.TryGetValue(REQUEST_ID, out var request) && request is IRequest telegramRequest)
+          // https://core.telegram.org/bots/faq#my-bot-is-hitting-limits-how-do-i-avoid-this
+          if (context.TryGetValue(REQUEST_ID, out var request) && request is IRequest { MethodName: "sendMessage" } telegramRequest)
           {
-            // https://core.telegram.org/bots/faq#my-bot-is-hitting-limits-how-do-i-avoid-this
-            if (telegramRequest.MethodName == "sendMessage")
+            // general rate-limit policy
+            policy = policy.WrapAsync(policyRegistry.GetOrAdd("GlobalLimitPolicy", _ =>
+              Policy.RateLimitAsync<HttpResponseMessage>(30, TimeSpan.FromSeconds(1))));
+
+            // specific rate-limit policy
+            if (telegramRequest is IChatTargetable { ChatId: var chatId })
             {
-              // general rate-limit policy
-              policy = policy.WrapAsync(policyRegistry.GetOrAdd("GlobalLimitPolicy", _ =>
-                Policy.RateLimitAsync<HttpResponseMessage>(30, TimeSpan.FromSeconds(1))));
+              policy = policy.WrapAsync(policyRegistry.GetOrAdd($"SpecificLimitPolicyPerMinute{chatId.Identifier}", _ =>
+                Policy.RateLimitAsync<HttpResponseMessage>(20, TimeSpan.FromMinutes(1))));
 
-              // specific rate-limit policy
-              if (telegramRequest is IChatTargetable { ChatId: var chatId })
-              {
-                policy = policy.WrapAsync(policyRegistry.GetOrAdd($"SpecificLimitPolicyPerMinute{chatId.Identifier}", _ =>
-                  Policy.RateLimitAsync<HttpResponseMessage>(20, TimeSpan.FromMinutes(1))));
-
-                policy = policy.WrapAsync(policyRegistry.GetOrAdd($"SpecificLimitPolicyPerSecond{chatId.Identifier}", _ =>
-                  Policy.RateLimitAsync<HttpResponseMessage>(1, TimeSpan.FromSeconds(1), 2)));
-              }
+              policy = policy.WrapAsync(policyRegistry.GetOrAdd($"SpecificLimitPolicyPerSecond{chatId.Identifier}", _ =>
+                Policy.RateLimitAsync<HttpResponseMessage>(1, TimeSpan.FromSeconds(1), 2)));
             }
           }
           
@@ -183,7 +180,7 @@ namespace Team23.TelegramSkeleton
             if (!handlerAttribute.GetType().InheritsOrImplements(typeof(IHandlerAttribute<,>))) continue;
             foreach (var propertyInfo in handlerAttribute.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
-              if (propertyInfo.CanRead && propertyInfo.CanWrite)
+              if (propertyInfo is { CanRead: true, CanWrite: true })
               {
                 metadata.Add(propertyInfo.Name, propertyInfo.GetValue(handlerAttribute));
               }

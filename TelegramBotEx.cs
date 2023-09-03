@@ -24,7 +24,7 @@ namespace Team23.TelegramSkeleton
           break;
         
         case { Message: { } message }:
-          await botClient.EditMessageReplyMarkupAsync(message.Chat!, message.MessageId, replyMarkup, cancellationToken).ConfigureAwait(false);
+          await botClient.EditMessageReplyMarkupAsync(message.Chat, message.MessageId, replyMarkup, cancellationToken).ConfigureAwait(false);
           break;
         
         default:
@@ -34,7 +34,8 @@ namespace Team23.TelegramSkeleton
 
     public static async Task<Message> SendTextMessageAsync(this ITelegramBotClient botClient, ChatId chatId, InputTextMessageContent content, bool? disableNotification = default, bool protectContent = default, int? replyToMessageId = default, bool? allowSendingWithoutReply = default, IReplyMarkup? replyMarkup = default, CancellationToken cancellationToken = default)
     {
-      return await botClient.SendTextMessageAsync(chatId, content.MessageText, content.ParseMode, content.Entities, content.DisableWebPagePreview, disableNotification, protectContent, replyToMessageId, allowSendingWithoutReply, replyMarkup, cancellationToken)
+      return await botClient
+        .SendTextMessageAsync(chatId, content.MessageText, null, content.ParseMode, content.Entities, content.DisableWebPagePreview, disableNotification, protectContent, replyToMessageId, allowSendingWithoutReply, replyMarkup, cancellationToken)
         .ConfigureAwait(false);
     }
 
@@ -70,7 +71,7 @@ namespace Team23.TelegramSkeleton
           break;
         
         case { Message: { } message }:
-          await botClient.EditMessageTextAsync(message.Chat!, message.MessageId, content, replyMarkup, cancellationToken).ConfigureAwait(false);
+          await botClient.EditMessageTextAsync(message.Chat, message.MessageId, content, replyMarkup, cancellationToken).ConfigureAwait(false);
           break;
         
         default:
